@@ -1,0 +1,123 @@
+{% autoescape None %}
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Finance</title>
+        <script type="text/javascript" src="/static/js/jquery-1.10.2.min.js"></script>
+        <script src="/static/js/highcharts/highcharts.js"></script>
+        <script src="/static/js/highcharts/modules/exporting.js"></script>
+        <script type="text/javascript">
+$(function () {
+    var qdate = '{{ qdate }}';
+    var qtime = {{ qtime }};
+    var qtables = [{{ qtables }}];
+    $('#qdate').val(qdate);
+    $('#qtime').val(qtime);
+    
+    for(var i = 0; i < qtables.length; i ++) {
+        var qtable = qtables[i];
+        $('input[name=qtable][value=' + qtable + ']').attr("checked", true);
+    }
+
+    if (qtables.length == 0) {
+        $('input[name=qtable]').attr("checked", true);
+        $('#qform').submit();
+    }
+    
+    $('#btnSubmit').click(function(){
+        $('#qform').submit();
+    });
+
+    $('#container').highcharts({
+        chart: {
+            type: 'line',
+            zoomType: 'x'
+        },
+        title: {
+            text: 'Prices'
+        },
+        xAxis: {
+            type: 'datetime'
+        },
+        yAxis: {
+            title: {
+                text: 'Price'
+            },
+            labels: {
+                formatter: function() {
+                    return '';
+                }
+            },
+            lineWidth: 2
+        },
+        legend: {
+            enabled: true
+        },
+        plotOptions: {
+            line: {
+                marker: {
+                    radius: 1,
+                    enable: false
+                }
+            }
+        },
+        tooltip: {
+            headerFormat: '',
+            crosshairs: true,
+            shared: true,
+            pointFormat: '{point.name}<br/>'
+        },
+        series: [
+        {% for dispLine in dispSeries %}{
+            name: "{{ dispLine['name'] }}",
+            data: {{ dispLine['points'] }}
+            }{% if dispLine!=dispSeries[len(dispSeries)-1] %},{% end %}
+        {% end %}]
+    });
+});
+    
+        </script>
+    </head>
+    <body>
+    <form name='qform' id='qform' action='/display' method='GET'>
+        Date:<input type='text' id='qdate' name='qdate' size='15' />&nbsp;&nbsp;
+        Time:<select id='qtime' name='qtime'>
+                <option value='0'>00:00 - 01:00</option>
+                <option value='1'>01:00 - 02:00</option>
+                <option value='2'>02:00 - 03:00</option>
+                <option value='3'>03:00 - 04:00</option>
+                <option value='4'>04:00 - 05:00</option>
+                <option value='5'>05:00 - 06:00</option>
+                <option value='6'>06:00 - 07:00</option>
+                <option value='7'>07:00 - 08:00</option>
+                <option value='8'>08:00 - 09:00</option>
+                <option value='9'>09:00 - 10:00</option>
+                <option value='10'>10:00 - 11:00</option>
+                <option value='11'>11:00 - 12:00</option>
+                <option value='12'>12:00 - 13:00</option>
+                <option value='13'>13:00 - 14:00</option>
+                <option value='14'>14:00 - 15:00</option>
+                <option value='15'>15:00 - 16:00</option>
+                <option value='16'>16:00 - 17:00</option>
+                <option value='17'>17:00 - 18:00</option>
+                <option value='18'>18:00 - 19:00</option>
+                <option value='19'>19:00 - 20:00</option>
+                <option value='20'>20:00 - 21:00</option>
+                <option value='21'>21:00 - 22:00</option>
+                <option value='22'>22:00 - 23:00</option>
+                <option value='23'>23:00 - 24:00</option>
+            </select>&nbsp;
+        <input type='checkbox' name='qtable' value='SILVERRMB' />SILVERRMB
+        <input type='checkbox' name='qtable' value='GOLDUSD' />GOLDUSD
+        <input type='checkbox' name='qtable' value='AGTD' />AGTD
+        <input type='checkbox' name='qtable' value='USDX' />USDX
+        <input type='checkbox' name='qtable' value='USADJI' />USADJI
+        &nbsp;<button id='btnSubmit'>Query</button>
+    </form>
+    <div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+	</body>
+</html>
+
+
