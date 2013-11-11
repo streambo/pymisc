@@ -1,0 +1,6 @@
+
+[B]0.0.2[/B] (2013/11/3 by rolandwz@live.com)
+改为从bae抓取
+
+[B]0.0.1[/B] (2013/11/3 by rolandwz@live.com)
+- 从泰捷TV抓取直接源。

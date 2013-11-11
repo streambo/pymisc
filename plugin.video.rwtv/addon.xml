@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.rwtvradio"
+    name="电视电台直播"
+    version="0.0.2"
+    provider-name="Roland">
+    <extension
+        point="xbmc.python.pluginsource"
+        library="default.py">
+        <provides>audio video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">Roland TV Radio plugin</summary>
+        <summary lang="zh">电视电台直播插件</summary>
+        <description lang="zh">电视电台直播</description>
+        <platform>all</platform>
+    </extension>
+</addon>
