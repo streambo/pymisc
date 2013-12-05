@@ -15,7 +15,8 @@ def monitor():
 	msg = ''
 	#Agg
 	try:
-		aggPrice = icbcAgg()
+		#aggPrice = icbcAgg()
+		aggPrice = sinaAgg()
 		msg = msg + monitorPrice('AGG', aggPrice)
 	except:
 		log.exception('Exception Occured!')
@@ -40,7 +41,7 @@ def monitorPrice(ptype, price):
 	price30 = db.getPrice(ptype, dLong - 1800)
 	percent30 = 0
 	if price30:
-		percent30 = round(abs((price['p'] - price30) / price30) * 100, 2)
+		percent30 = round(abs((price['p'] - price30) / price30) * 100, 3)
 	
 	# get last message information
 	notper0 = db.getNotice(ptype, 0, dDate)
@@ -63,29 +64,29 @@ def sinaAgg():
 	# fetch price of London
 	f = urllib2.urlopen('http://hq.sinajs.cn/?_=1386077085140/&list=hf_XAG')
 	html = f.read()
-	html = html[19:len(html) - 2]
+	html = html[19:len(html) - 3]
 	xagArr = re.split(',', html)
 	
 	price = {}
-	price['dt'] = datetime.datetime.strptime(xagArr[13] + ' ' + xagArr[6], '%Y-%m-%d %H:%M:%S')
+	price['dt'] = datetime.datetime.strptime(xagArr[12] + ' ' + xagArr[6], '%Y-%m-%d %H:%M:%S')
 	xag = float(xagArr[0])
-	xag0 = float(xagArr[2])
+	xag0 = float(xagArr[7])
 	log.debug('XAG: ' + xagArr[0] + ', XAG0: ' + xagArr[2])
 	
 	# fetch USD price
 	fusd = urllib2.urlopen('http://hq.sinajs.cn/rn=13860770561347070422433316708&list=USDCNY')
 	htmlusd = fusd.read()
-	htmlusd = htmlusd[19:len(htmlusd) - 2]
+	htmlusd = htmlusd[19:len(htmlusd) - 3]
 	usdArr = re.split(',', htmlusd)
-	usd = float(usdArr[0])
+	usd = float(usdArr[1])
 	log.debug('USD: ' + usdArr[0])
 	
 	# calculate price in RMB
-	price['p'] = usd * xag / 31.1035
-	price['p0'] = usd * xag0 / 31.1035
+	price['p'] = round(usd * xag / 31.1035, 3)
+	price['p0'] = round(usd * xag0 / 31.1035, 3)
 	price['per'] = float(xagArr[1])
 	
-	log.info('sina agg:' + str(price['dt']) + ', ' + str(price['p']) + ', ' + str(price['p0']) + ', ' + str(price['per']))
+	log.info('sina agg: ' + str(price['dt']) + ', ' + str(price['p']) + ', ' + str(price['p0']) + ', ' + str(price['per']))
 	return price
 	
 def icbcAgg():
@@ -103,10 +104,10 @@ def icbcAgg():
 	low = float(pmsSilverRmb.group(5))
 	if high - price['p'] > price['p'] - low:
 		price['p0'] = high
-		price['per'] = round(abs((price['p'] - high) / high) * 100, 2)
+		price['per'] = round(abs((price['p'] - high) / high) * 100, 3)
 	else:
 		price['p0'] = low
-		price['per'] = round(abs((price['p'] - low) / low) * 100, 2)
+		price['per'] = round(abs((price['p'] - low) / low) * 100, 3)
 		
 	log.info('icbc agg: ' + str(price['dt']) + ', ' + str(price['p']) + ', ' + str(price['p0']) + ', ' + str(price['per']))
 	return price
