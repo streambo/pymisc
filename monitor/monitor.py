@@ -4,9 +4,10 @@ import re
 import datetime
 import time
 import traceback
-#from apscheduler.scheduler import Scheduler
+from apscheduler.scheduler import Scheduler
 from db import SqliteDB
 from rwlogging import log
+import fetion
 
 db = SqliteDB()
 log.debug('moniter launched!')
@@ -22,8 +23,8 @@ def monitor():
 		log.exception('Exception Occured!')
 	
 	if msg:
-		#sendmessage(msg)
 		log.info('* MESSAGE * ' + msg)
+		fetion.sms(msg)
 
 def monitorPrice(ptype, price):
 	ret = ''
@@ -114,7 +115,10 @@ def icbcAgg():
 	
 
 if __name__ == "__main__":
-	#sched = Scheduler()
-	#sched.start()
+	sched = Scheduler()
+	sched.daemonic = False
 	#sched.add_interval_job(monitor, seconds=60) 
-	monitor()
+	sched.add_cron_job(monitor, day_of_week='mon-sat', minute='*')
+	sched.start()
+	#monitor()
+	

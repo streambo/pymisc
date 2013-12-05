@@ -5,7 +5,8 @@ from rwlogging import log
 
 class SqliteDB():
 	def __init__(self):
-		self.conn = sqlite3.connect(os.path.join(os.path.dirname(__file__), 'sqlite.db').replace('\\','/'), timeout=10)
+		self.conn = sqlite3.connect(os.path.join(os.path.dirname(__file__), 'sqlite.db').replace('\\','/')
+,timeout=10, check_same_thread=False)
 		self.initTables()
 	def initTables(self):
 		cur = self.conn.cursor()

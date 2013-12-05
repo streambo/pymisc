@@ -18,7 +18,7 @@ LOGGING_CONFIG = {
 			'level': 'INFO',
 			'class': 'logging.handlers.RotatingFileHandler',
 			'filename': 'monitor.log',
-			'maxBytes': 1024,
+			'maxBytes': 1048576,
 			'backupCount': 3,
 			'formatter' : 'verbose'
 		},
