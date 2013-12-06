@@ -27,14 +27,14 @@ def monitorPrice():
 	return msg
 
 def latestPrices():
-	msg = datetime.datetime.now().strftime('%m-%d %H:%M') + '\n'
+	msg = datetime.datetime.now().strftime('%m-%d %H:%M') + ': '
 	dtypes = ['AGG', 'AGTD']
 	
 	db = SqliteDB()
 	dtLong = long(time.time())
 	for dtype in dtypes:
 		price = db.getPrice(dtype, dtLong)
-		msg = msg + dtype + ':' + price[0] + ',' + price[1] + '%,' + price[2] + '\n'
+		msg = msg + dtype + ':' + str(price[0]) + ',' + str(price[1]) + '%,' + str(price[2]) + '; '
 	
 	log.info('latest prices: ' + msg)
 	return msg
@@ -53,9 +53,10 @@ def tally(ptype, price):
 	percent0 = price['per']
 	
 	# get the price of 30 minutes ago
-	price30 = db.getPrice(ptype, dLong - 1800)[0]
+	price30 = db.getPrice(ptype, dLong - 1800)
 	percent30 = 0
 	if price30:
+		price30 = price30[0]
 		percent30 = round((price['p'] - price30) * 100 / price30, 3)
 	
 	# get last message information
@@ -63,14 +64,14 @@ def tally(ptype, price):
 	log.info(ptype + ', percentage 0: ' + str(percent0) + ', last notice: ' + str(notper0))
 	#print notper0
 	if abs(percent0 - notper0) >= 1:
-		ret = ptype + '0,' + str(price['p']) + ',' + str(percent0) + '%\n'
-		db.updateNotice((ptype, 0, dLong, dDate, dTime, price['p'], percent0, ret, ''))
+		ret = ptype + '0,' + str(price['p']) + ',' + str(percent0) + '%; '
+		db.addNotice((ptype, 0, dLong, dDate, dTime, price['p'], percent0, ret, ''))
 	
 	notcount30 = db.getNoticeCount(ptype, 30, dLong - 1800)
 	log.info(ptype + ', percentage 30: ' + str(percent30) + ', notice in 30 minutes: ' + str(notcount30))
 	if notcount30 == 0 and abs(percent30) >= 1:
-		ret = ret + ptype + '30,' + str(price['p']) + ',' + str(percent30) + '%\n'
-		db.updateNotice((ptype, 30, dLong, dDate, dTime, price['p'], percent30, ret, ''))
+		ret = ret + ptype + '30,' + str(price['p']) + ',' + str(percent30) + '%; '
+		db.addNotice((ptype, 30, dLong, dDate, dTime, price['p'], percent30, ret, ''))
 	
 	return ret;
 	
@@ -116,7 +117,7 @@ def sinaAgTD():
 	price['dt'] = datetime.datetime.strptime(agtdArr[12] + ' ' + agtdArr[6], '%Y-%m-%d %H:%M:%S')	
 	price['p'] = float(agtdArr[0])
 	price['p0'] = float(agtdArr[7])
-	price['per'] = float(agtdArr[1])
+	price['per'] = round((price['p'] - price['p0']) * 100 / price['p0'], 3)
 	
 	log.info('sina agtd: ' + str(price['dt']) + ', ' + str(price['p']) + ', ' + str(price['p0']) + ', ' + str(price['per']))
 	return price

@@ -90,23 +90,9 @@ NOTES    TEXT
 		cur.close()
 		return
 		
-	def updateNotice(self, data):
-		cur = self.conn.cursor()
-		#print cur.execute('select * from NOTICE').fetchall()
-		cur.execute('SELECT DTLONG FROM NOTICE WHERE DTYPE=? AND DSUBTYPE=? AND DDATE=?', (data[0], data[1], data[3],))
-		if cur.fetchone() == None:
-			log.debug('inserting notice: ' + str(data[0]) + ',' + str(data[1]) + ',' + str(data[4]) + ',' + str(data[6]))
-			cur.execute('INSERT INTO NOTICE(DTYPE,DSUBTYPE,DTLONG,DDATE,DTIME,DVALUE,DPERCENT,DTEXT,NOTES) VALUES(?,?,?,?,?,?,?,?,?)', data)
-		else:
-			log.debug('updating notice: ' + str(data[0]) + ',' + str(data[1]) + ',' + str(data[4]) + ',' + str(data[6]))
-			cur.execute('UPDATE NOTICE SET DTLONG=?,DTIME=?,DVALUE=?,DPERCENT=?,DTEXT=? WHERE DTYPE=? AND DSUBTYPE=? AND DDATE=?', (data[2], data[4], data[5], data[6], data[7],data[0], data[1], data[3]))
-		self.conn.commit()
-		cur.close()
-		return
-		
 	def getNotice(self, ptype, psubtype, qdate):
 		cur = self.conn.cursor()
-		cur.execute('SELECT DPERCENT FROM NOTICE WHERE DTYPE=? AND DSUBTYPE=? AND DDATE<=?', (ptype, psubtype, qdate))
+		cur.execute('SELECT DPERCENT FROM NOTICE WHERE DTYPE=? AND DSUBTYPE=? AND DDATE<=? ORDER BY DTLONG DESC', (ptype, psubtype, qdate))
 		val = cur.fetchone()
 		if val:
 			return val[0]
@@ -115,7 +101,7 @@ NOTES    TEXT
 		
 	def getNoticeCount(self, ptype, psubtype, qtime):
 		cur = self.conn.cursor()
-		cur.execute('SELECT COUNT(*) FROM NOTICE WHERE DTYPE=? AND DSUBTYPE=? AND DTLONG>=? ORDER BY DTLONG', (ptype, psubtype, qtime))
+		cur.execute('SELECT COUNT(*) FROM NOTICE WHERE DTYPE=? AND DSUBTYPE=? AND DTLONG>=? ORDER BY DTLONG DESC', (ptype, psubtype, qtime))
 		return cur.fetchone()[0]
 
 

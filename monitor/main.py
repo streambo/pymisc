@@ -49,10 +49,11 @@ def batchMonitor():
 		log.exception('dayMonitor Exception Occured!')
 		
 if __name__ == "__main__":
-	sched = Scheduler()
-	sched.daemonic = False
+	sched = Scheduler(standalone=True)
+	#sched.daemonic = False
+	#sched.add_cron_job(weatherMonitor, day_of_week='mon-sat', minute='*')
 	sched.add_cron_job(minuteMonitor, day_of_week='mon-sat', minute='*')
-	sched.add_cron_job(weatherMonitor, hour='7,17,21', minute='0')
+	sched.add_cron_job(weatherMonitor, hour='7,17,21', minute='15')
 	sched.add_cron_job(marketMonitor, day_of_week='mon-fri', hour='11,15,21', minute='15')
+	log.info('Monitor starting...')
 	sched.start()
-	log.info('Monitor started...')
