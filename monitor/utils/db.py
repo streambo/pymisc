@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sqlite3
-from rwlogging import log
+from utils.rwlogging import log
 
 class SqliteDB():
 	def __init__(self):
@@ -18,6 +18,8 @@ DTLONG INTEGER,
 DDATE  TEXT,
 DTIME  TEXT,
 DVALUE REAL,
+DPER   REAL,
+DOPEN  REAL,
 NOTES  TEXT,
 FETCHDT INTEGER,
 FETCHDATE TEXT,
@@ -49,13 +51,23 @@ NOTES    TEXT
 		cur.execute('DELETE FROM FEDATA')
 		cur.execute('DELETE FROM NOTICE')
 		self.conn.commit()
-	
+		
+	def cleanOldData(self):
+		cur = self.conn.cursor()
+		dtLong = long(time.time()) - 48 * 60 * 60
+		log.info('cleaning database before: ' + str(dtLong))
+		cur.execute('DELETE FROM FEDATA WHERE DTLONG<=?', (dtLong,))
+		cur.execute('DELETE FROM NOTICE WHERE DTLONG<=?', (dtLong,))
+		self.conn.commit()
+		cur.close()
+		return
+		
 	def addPrice(self, data):
 		cur = self.conn.cursor()
 		cur.execute('SELECT DTLONG FROM FEDATA WHERE DTYPE=? AND DTLONG=?', (data[0], long(data[1]),))
 		if cur.fetchone() == None:
 			log.debug('inserting price: ' + data[0] + ' ' + str(data[1]) + ' ' + data[3] + ' ' + str(data[4]))
-			cur.execute('INSERT INTO FEDATA(DTYPE,DTLONG,DDATE,DTIME,DVALUE,NOTES,FETCHDT,FETCHDATE,FETCHTIME) VALUES(?,?,?,?,?,?,?,?,?)', data)
+			cur.execute('INSERT INTO FEDATA(DTYPE,DTLONG,DDATE,DTIME,DVALUE,DPER,DOPEN,NOTES,FETCHDT,FETCHDATE,FETCHTIME) VALUES(?,?,?,?,?,?,?,?,?,?,?)', data)
 		self.conn.commit()
 		cur.close()
 		return
@@ -63,10 +75,10 @@ NOTES    TEXT
 	def getPrice(self, ptype, qtime):
 		cur = self.conn.cursor()
 		#print cur.execute('select * from FEDATA').fetchall()
-		cur.execute('SELECT DVALUE FROM FEDATA WHERE DTYPE=? AND DTLONG<=? ORDER BY DTLONG', (ptype, qtime))
+		cur.execute('SELECT DVALUE,DPER,DOPEN FROM FEDATA WHERE DTYPE=? AND DTLONG<=? ORDER BY DTLONG DESC', (ptype, qtime))
 		val = cur.fetchone()
 		if val:
-			return val[0]
+			return val
 		else:
 			return None
 		

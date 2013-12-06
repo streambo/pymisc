@@ -3,46 +3,60 @@ import urllib2
 import re
 import datetime
 import time
-import traceback
-from apscheduler.scheduler import Scheduler
-from db import SqliteDB
-from rwlogging import log
-import fetion
+from utils.db import SqliteDB
+from utils.rwlogging import log
 
-db = SqliteDB()
-log.debug('moniter launched!')
-
-def monitor():
+def monitorPrice():
 	msg = ''
-	#Agg
+	#Agg 
 	try:
 		#aggPrice = icbcAgg()
 		aggPrice = sinaAgg()
-		msg = msg + monitorPrice('AGG', aggPrice)
+		msg = msg + tally('AGG', aggPrice)
 	except:
-		log.exception('Exception Occured!')
+		log.exception('AGG Exception Occured!')
 	
-	if msg:
-		log.info('* MESSAGE * ' + msg)
-		fetion.sms(msg)
+	#Agg 
+	try:
+		agtdPrice = sinaAgTD()
+		msg = msg + tally('AGTD', agtdPrice)
+		#pass
+	except:
+		log.exception('AGTD Exception Occured!')
+	
+	return msg
 
-def monitorPrice(ptype, price):
+def latestPrices():
+	msg = datetime.datetime.now().strftime('%m-%d %H:%M') + '\n'
+	dtypes = ['AGG', 'AGTD']
+	
+	db = SqliteDB()
+	dtLong = long(time.time())
+	for dtype in dtypes:
+		price = db.getPrice(dtype, dtLong)
+		msg = msg + dtype + ':' + price[0] + ',' + price[1] + '%,' + price[2] + '\n'
+	
+	log.info('latest prices: ' + msg)
+	return msg
+	
+def tally(ptype, price):
+	db = SqliteDB()
 	ret = ''
 	
 	dLong = time.mktime(price['dt'].timetuple())
 	dDate = price['dt'].strftime('%Y-%m-%d')
 	dTime = price['dt'].strftime('%H:%M:%S')
 	
-	db.addPrice((ptype, dLong, dDate, dTime, price['p'], '', dLong, dDate, dTime))
+	db.addPrice((ptype, dLong, dDate, dTime, price['p'], price['per'], price['p0'], '', dLong, dDate, dTime))
 	
 	# calculate the percentage
 	percent0 = price['per']
 	
 	# get the price of 30 minutes ago
-	price30 = db.getPrice(ptype, dLong - 1800)
+	price30 = db.getPrice(ptype, dLong - 1800)[0]
 	percent30 = 0
 	if price30:
-		percent30 = round(abs((price['p'] - price30) / price30) * 100, 3)
+		percent30 = round((price['p'] - price30) * 100 / price30, 3)
 	
 	# get last message information
 	notper0 = db.getNotice(ptype, 0, dDate)
@@ -54,7 +68,7 @@ def monitorPrice(ptype, price):
 	
 	notcount30 = db.getNoticeCount(ptype, 30, dLong - 1800)
 	log.info(ptype + ', percentage 30: ' + str(percent30) + ', notice in 30 minutes: ' + str(notcount30))
-	if notcount30 == 0 and percent30 >= 1:
+	if notcount30 == 0 and abs(percent30) >= 1:
 		ret = ret + ptype + '30,' + str(price['p']) + ',' + str(percent30) + '%\n'
 		db.updateNotice((ptype, 30, dLong, dDate, dTime, price['p'], percent30, ret, ''))
 	
@@ -90,6 +104,23 @@ def sinaAgg():
 	log.info('sina agg: ' + str(price['dt']) + ', ' + str(price['p']) + ', ' + str(price['p0']) + ', ' + str(price['per']))
 	return price
 	
+	
+def sinaAgTD():
+	# fetch price of AG T+D
+	f = urllib2.urlopen('http://hq.sinajs.cn/list=hf_AGTD')
+	html = f.read()
+	html = html[20:len(html) - 3]
+	agtdArr = re.split(',', html)
+	
+	price = {}
+	price['dt'] = datetime.datetime.strptime(agtdArr[12] + ' ' + agtdArr[6], '%Y-%m-%d %H:%M:%S')	
+	price['p'] = float(agtdArr[0])
+	price['p0'] = float(agtdArr[7])
+	price['per'] = float(agtdArr[1])
+	
+	log.info('sina agtd: ' + str(price['dt']) + ', ' + str(price['p']) + ', ' + str(price['p0']) + ', ' + str(price['per']))
+	return price
+	
 def icbcAgg():
 	f = urllib2.urlopen('http://www.icbc.com.cn/ICBCDynamicSite/Charts/GoldTendencyPicture.aspx', timeout=60)
 	html = f.read()
@@ -105,20 +136,11 @@ def icbcAgg():
 	low = float(pmsSilverRmb.group(5))
 	if high - price['p'] > price['p'] - low:
 		price['p0'] = high
-		price['per'] = round(abs((price['p'] - high) / high) * 100, 3)
+		price['per'] = round((price['p'] - high) * 100 / high, 3)
 	else:
 		price['p0'] = low
-		price['per'] = round(abs((price['p'] - low) / low) * 100, 3)
+		price['per'] = round((price['p'] - low) * 100 / low, 3)
 		
 	log.info('icbc agg: ' + str(price['dt']) + ', ' + str(price['p']) + ', ' + str(price['p0']) + ', ' + str(price['per']))
 	return price
-	
-
-if __name__ == "__main__":
-	sched = Scheduler()
-	sched.daemonic = False
-	#sched.add_interval_job(monitor, seconds=60) 
-	sched.add_cron_job(monitor, day_of_week='mon-sat', minute='*')
-	sched.start()
-	#monitor()
 	

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import logging
 import logging.config
 
@@ -17,7 +18,7 @@ LOGGING_CONFIG = {
 		'file': {
 			'level': 'INFO',
 			'class': 'logging.handlers.RotatingFileHandler',
-			'filename': 'monitor.log',
+			'filename': os.path.join(os.path.dirname(__file__), '../logs/monitor.log'),
 			'maxBytes': 1048576,
 			'backupCount': 3,
 			'formatter' : 'verbose'
