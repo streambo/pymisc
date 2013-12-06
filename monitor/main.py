@@ -16,7 +16,7 @@ def minuteMonitor():
 	# sending message if available
 	if msg:
 		log.info('* minuteMonitor MESSAGE * ' + msg)
-		fetion.sms(msg)
+		fetion.smsSelf(msg)
 
 def marketMonitor():
 	msg = ''
@@ -28,7 +28,7 @@ def marketMonitor():
 	# sending message if available
 	if msg:
 		log.info('* marketMonitor MESSAGE * ' + msg)
-		fetion.sms(msg)
+		fetion.smsSelf(msg)
 
 def weatherMonitor():
 	msg = ''
@@ -39,7 +39,7 @@ def weatherMonitor():
 	# sending message if available
 	if msg:
 		log.info('* weatherMonitor MESSAGE * ' + msg)
-		fetion.sms(msg)
+		fetion.smsFamily(msg)
 
 def batchMonitor():
 	try:
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 	#sched.daemonic = False
 	#sched.add_cron_job(weatherMonitor, day_of_week='mon-sat', minute='*')
 	sched.add_cron_job(minuteMonitor, day_of_week='mon-sat', minute='*')
-	sched.add_cron_job(weatherMonitor, hour='7,17,21', minute='15')
+	sched.add_cron_job(weatherMonitor, hour='7,17,21', minute='0')
 	sched.add_cron_job(marketMonitor, day_of_week='mon-fri', hour='11,15,21', minute='15')
 	log.info('Monitor starting...')
 	sched.start()

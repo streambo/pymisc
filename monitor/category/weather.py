@@ -14,6 +14,6 @@ def fetchWeather():
 	else:
 		retjson = resp.read()
 	data = json.loads(retjson)
-	msg = data['n'] + ',' + data['s'] + ',' + data['t'] + unicode('℃,', 'utf-8') + data['w'] + ',' + str(data['h']) + '%; '
-	msg = msg + unicode('24小时:', 'utf-8') + data['d1']['s'] + ',' + data['d1']['l'] + '~' + data['d1']['h'] + unicode('℃,', 'utf-8') + data['w']
+	msg = data['n'] + unicode('实时天气:', 'utf-8') + data['s'] + ',' + data['t'] + unicode('℃,', 'utf-8') + data['w'] + unicode(',湿度', 'utf-8') + str(data['h']) + '%;\n'
+	msg = msg + unicode('24小时预报:', 'utf-8') + data['d1']['s'] + ',' + data['d1']['l'] + '~' + data['d1']['h'] + unicode('℃,', 'utf-8') + data['w']
 	return msg

@@ -27,14 +27,14 @@ def monitorPrice():
 	return msg
 
 def latestPrices():
-	msg = datetime.datetime.now().strftime('%m-%d %H:%M') + ': '
+	msg = datetime.datetime.now().strftime('%m-%d %H:%M') + ':\n'
 	dtypes = ['AGG', 'AGTD']
 	
 	db = SqliteDB()
 	dtLong = long(time.time())
 	for dtype in dtypes:
 		price = db.getPrice(dtype, dtLong)
-		msg = msg + dtype + ':' + str(price[0]) + ',' + str(price[1]) + '%,' + str(price[2]) + '; '
+		msg = msg + dtype + ':' + str(price[0]) + ',' + str(price[1]) + '%,' + str(price[2]) + ';\n'
 	
 	log.info('latest prices: ' + msg)
 	return msg
@@ -56,6 +56,7 @@ def tally(ptype, price):
 	price30 = db.getPrice(ptype, dLong - 1800)
 	percent30 = 0
 	if price30:
+		log.debug(ptype + ',price30,' + str(price30[3]) + ',' + str(price30[0]))
 		price30 = price30[0]
 		percent30 = round((price['p'] - price30) * 100 / price30, 3)
 	
@@ -64,16 +65,16 @@ def tally(ptype, price):
 	log.info(ptype + ', percentage 0: ' + str(percent0) + ', last notice: ' + str(notper0))
 	#print notper0
 	if abs(percent0 - notper0) >= 1:
-		ret = ptype + '0,' + str(price['p']) + ',' + str(percent0) + '%; '
+		ret = ptype + '0,' + str(price['p']) + ',' + str(percent0) + '%;\n'
 		db.addNotice((ptype, 0, dLong, dDate, dTime, price['p'], percent0, ret, ''))
 	
 	notcount30 = db.getNoticeCount(ptype, 30, dLong - 1800)
 	log.info(ptype + ', percentage 30: ' + str(percent30) + ', notice in 30 minutes: ' + str(notcount30))
 	if notcount30 == 0 and abs(percent30) >= 1:
-		ret = ret + ptype + '30,' + str(price['p']) + ',' + str(percent30) + '%; '
+		ret = ret + ptype + '30,' + str(price['p']) + ',' + str(percent30) + '%;\n'
 		db.addNotice((ptype, 30, dLong, dDate, dTime, price['p'], percent30, ret, ''))
 	
-	return ret;
+	return ret
 	
 
 def sinaAgg():

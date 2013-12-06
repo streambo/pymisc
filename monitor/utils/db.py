@@ -75,7 +75,7 @@ NOTES    TEXT
 	def getPrice(self, ptype, qtime):
 		cur = self.conn.cursor()
 		#print cur.execute('select * from FEDATA').fetchall()
-		cur.execute('SELECT DVALUE,DPER,DOPEN FROM FEDATA WHERE DTYPE=? AND DTLONG<=? ORDER BY DTLONG DESC', (ptype, qtime))
+		cur.execute('SELECT DVALUE,DPER,DOPEN,DTIME FROM FEDATA WHERE DTYPE=? AND DTLONG<=? ORDER BY DTLONG DESC', (ptype, qtime))
 		val = cur.fetchone()
 		if val:
 			return val
