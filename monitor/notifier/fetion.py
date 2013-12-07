@@ -7,11 +7,12 @@ def smsSelf(msg):
 	sms(msg, '13811830642')
 	
 def smsFamily(msg):
-	sms(msg, '13811830642,13810536149,13693718965')
-	#13693718965
+	sms(msg, '13811830642')
+	sms(msg, '13810536149')
+	sms(msg, '13693718965')
 	
 def sms(msg, receiver):
-	url = 'https://quanapi.sinaapp.com/fetion.php?u=13811830642&p=rw314159'
+	url = 'https://quanapi.sinaapp.com/fetion.php?u=13811830642&p='
 	url = url + '&to=' + urllib2.quote(receiver)
 	url = url + '&m=' + urllib2.quote(msg.encode('utf-8'))
 	ret = urllib2.urlopen(url).read()

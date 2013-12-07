@@ -41,6 +41,17 @@ def weatherMonitor():
 		log.info('* weatherMonitor MESSAGE * ' + msg)
 		fetion.smsFamily(msg)
 
+def pm25Monitor():
+	msg = ''
+	try:
+		msg = msg + weather.fetchPm25Forcast()
+	except:
+		log.exception('pm25Monitor Exception Occured!')
+	# sending message if available
+	if msg:
+		log.info('* pm25Monitor MESSAGE * ' + msg)
+		fetion.smsFamily(msg)
+
 def batchMonitor():
 	try:
 		db = SqliteDB()
@@ -56,6 +67,7 @@ if __name__ == "__main__":
 	sched.add_cron_job(minuteMonitor, day_of_week='tue-fri', minute='*')
 	sched.add_cron_job(minuteMonitor, day_of_week='sat', hour='0-3', minute='*')
 	sched.add_cron_job(weatherMonitor, hour='7,17,21', minute='0')
+	sched.add_cron_job(pm25Monitor, hour='19', minute='0')
 	sched.add_cron_job(marketMonitor, day_of_week='mon-fri', hour='11,15,21', minute='15')
 	log.info('Monitor starting...')
 	sched.start()
