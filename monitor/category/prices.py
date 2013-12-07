@@ -24,11 +24,19 @@ def monitorPrice():
 	except:
 		log.exception('AGTD Exception Occured!')
 	
+	#shdx 
+	try:
+		shdx = sinaSHDX()
+		msg = msg + tally('SHDX', shdx)
+		#pass
+	except:
+		log.exception('SHDX Exception Occured!')
+	
 	return msg
 
 def latestPrices():
 	msg = datetime.datetime.now().strftime('%m-%d %H:%M') + ':\n'
-	dtypes = ['AGG', 'AGTD']
+	dtypes = ['AGG', 'AGTD', 'SHDX']
 	
 	db = SqliteDB()
 	dtLong = long(time.time())
@@ -121,6 +129,22 @@ def sinaAgTD():
 	price['per'] = round((price['p'] - price['p0']) * 100 / price['p0'], 3)
 	
 	log.info('sina agtd: ' + str(price['dt']) + ', ' + str(price['p']) + ', ' + str(price['p0']) + ', ' + str(price['per']))
+	return price
+	
+def sinaSHDX():
+	# fetch price of AG T+D
+	f = urllib2.urlopen('http://hq.sinajs.cn/rn=1386417950746&list=sh000001')
+	html = f.read()
+	html = html[21:len(html) - 3]
+	arr = re.split(',', html)
+	
+	price = {}
+	price['dt'] = datetime.datetime.strptime(arr[30] + ' ' + arr[31], '%Y-%m-%d %H:%M:%S')	
+	price['p'] = float(arr[3])
+	price['p0'] = float(arr[2])
+	price['per'] = round((price['p'] - price['p0']) * 100 / price['p0'], 3)
+	
+	log.info('sina sh: ' + str(price['dt']) + ', ' + str(price['p']) + ', ' + str(price['p0']) + ', ' + str(price['per']))
 	return price
 	
 def icbcAgg():

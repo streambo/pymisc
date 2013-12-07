@@ -52,7 +52,9 @@ if __name__ == "__main__":
 	sched = Scheduler(standalone=True)
 	#sched.daemonic = False
 	#sched.add_cron_job(weatherMonitor, day_of_week='mon-sat', minute='*')
-	sched.add_cron_job(minuteMonitor, day_of_week='mon-sat', minute='*')
+	sched.add_cron_job(minuteMonitor, day_of_week='mon', hour='7-23', minute='*')
+	sched.add_cron_job(minuteMonitor, day_of_week='tue-fri', minute='*')
+	sched.add_cron_job(minuteMonitor, day_of_week='sat', hour='0-3', minute='*')
 	sched.add_cron_job(weatherMonitor, hour='7,17,21', minute='0')
 	sched.add_cron_job(marketMonitor, day_of_week='mon-fri', hour='11,15,21', minute='15')
 	log.info('Monitor starting...')
