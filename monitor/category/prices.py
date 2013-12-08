@@ -87,7 +87,7 @@ def tally(ptype, price):
 
 def sinaAgg():
 	# fetch price of London
-	f = urllib2.urlopen('http://hq.sinajs.cn/?_=1386077085140/&list=hf_XAG')
+	f = urllib2.urlopen('http://hq.sinajs.cn/?_=1386077085140/&list=hf_XAG', timeout=2)
 	html = f.read()
 	html = html[19:len(html) - 3]
 	xagArr = re.split(',', html)
@@ -99,7 +99,7 @@ def sinaAgg():
 	log.debug('XAG: ' + xagArr[0] + ', XAG0: ' + xagArr[2])
 	
 	# fetch USD price
-	fusd = urllib2.urlopen('http://hq.sinajs.cn/rn=13860770561347070422433316708&list=USDCNY')
+	fusd = urllib2.urlopen('http://hq.sinajs.cn/rn=13860770561347070422433316708&list=USDCNY', timeout=2)
 	htmlusd = fusd.read()
 	htmlusd = htmlusd[19:len(htmlusd) - 3]
 	usdArr = re.split(',', htmlusd)
@@ -117,7 +117,7 @@ def sinaAgg():
 	
 def sinaAgTD():
 	# fetch price of AG T+D
-	f = urllib2.urlopen('http://hq.sinajs.cn/list=hf_AGTD')
+	f = urllib2.urlopen('http://hq.sinajs.cn/list=hf_AGTD', timeout=2)
 	html = f.read()
 	html = html[20:len(html) - 3]
 	agtdArr = re.split(',', html)
@@ -133,7 +133,7 @@ def sinaAgTD():
 	
 def sinaSHDX():
 	# fetch price of AG T+D
-	f = urllib2.urlopen('http://hq.sinajs.cn/rn=1386417950746&list=sh000001')
+	f = urllib2.urlopen('http://hq.sinajs.cn/rn=1386417950746&list=sh000001', timeout=2)
 	html = f.read()
 	html = html[21:len(html) - 3]
 	arr = re.split(',', html)
@@ -148,7 +148,7 @@ def sinaSHDX():
 	return price
 	
 def icbcAgg():
-	f = urllib2.urlopen('http://www.icbc.com.cn/ICBCDynamicSite/Charts/GoldTendencyPicture.aspx', timeout=60)
+	f = urllib2.urlopen('http://www.icbc.com.cn/ICBCDynamicSite/Charts/GoldTendencyPicture.aspx', timeout=2)
 	html = f.read()
 	silverRmbPattern = re.compile(r"""人民币账户白银\s*</td>\s*<td[\s\S]+?</td>\s*<td.*?>\s*(.*?)\s*</td>
 \s*<td.*?>\s*(.*?)\s*</td>\s*<td.*?>\s*(.*?)\s*</td>\s*<td.*?>\s*(.*?)\s*</td>\s*<td.*?>\s*(.*?)\s*</td>""", re.S + re.X)

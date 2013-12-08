@@ -69,5 +69,6 @@ if __name__ == "__main__":
 	sched.add_cron_job(weatherMonitor, hour='7,17,21', minute='0')
 	sched.add_cron_job(pm25Monitor, hour='19', minute='0')
 	sched.add_cron_job(marketMonitor, day_of_week='mon-fri', hour='11,15,21', minute='15')
+	sched.add_cron_job(batchMonitor, hour='1', minute='0')
 	log.info('Monitor starting...')
 	sched.start()

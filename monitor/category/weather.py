@@ -7,7 +7,7 @@ from utils.rwlogging import log
 def fetchWeather():
 	req = urllib2.Request('http://ext.weather.com.cn/101010200.json')
 	req.add_header('Referer', 'http://ext.weather.com.cn/p.html')
-	resp = urllib2.urlopen(req)
+	resp = urllib2.urlopen(req, timeout=2)
 	if resp.info().get('Content-Encoding') == 'gzip':
 		buf = StringIO.StringIO(resp.read())
 		f = gzip.GzipFile(fileobj=buf)
@@ -16,16 +16,21 @@ def fetchWeather():
 		retjson = resp.read()
 	climate = json.loads(retjson)
 	
-	resp = urllib2.urlopen('http://m.weather.com.cn/data/101010200.html')
-	if resp.info().get('Content-Encoding') == 'gzip':
-		buf = StringIO.StringIO(resp.read())
-		f = gzip.GzipFile(fileobj=buf)
-		retjson = f.read()
-	else:
-		retjson = resp.read()
-	forcast = json.loads(retjson)['weatherinfo']
+	try:
+		resp = urllib2.urlopen('http://m.weather.com.cn/data/101010200.html', timeout=2)
+		if resp.info().get('Content-Encoding') == 'gzip':
+			buf = StringIO.StringIO(resp.read())
+			f = gzip.GzipFile(fileobj=buf)
+			retjson = f.read()
+		else:
+			retjson = resp.read()
+		forcast = json.loads(retjson)['weatherinfo']
+	except:
+		log.exception('m.weather Exception Occured!')
+		forcast = {}
+		forcast['wind2'] = ''
 	
-	resp = urllib2.urlopen('http://zx.bjmemc.com.cn/ashx/Data.ashx?Action=GetAQIClose1h')
+	resp = urllib2.urlopen('http://zx.bjmemc.com.cn/ashx/Data.ashx?Action=GetAQIClose1h', timeout=2)
 	if resp.info().get('Content-Encoding') == 'gzip':
 		buf = StringIO.StringIO(resp.read())
 		f = gzip.GzipFile(fileobj=buf)
@@ -47,7 +52,7 @@ def fetchWeather():
 	return msg
 
 def fetchPm25Forcast():
-	resp = urllib2.urlopen('http://zx.bjmemc.com.cn/ashx/DayForecast.ashx')
+	resp = urllib2.urlopen('http://zx.bjmemc.com.cn/ashx/DayForecast.ashx', timeout=60)
 	if resp.info().get('Content-Encoding') == 'gzip':
 		buf = StringIO.StringIO(resp.read())
 		f = gzip.GzipFile(fileobj=buf)
