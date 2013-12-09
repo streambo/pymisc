@@ -16,16 +16,20 @@ def smsFamily(msg):
 def sendSms(msg, receivers):
 	try:
 		phone = PyFetion.PyFetion('13811830642','','TCP',debug=True)
-		phone.login(PyFetion.FetionOnline)
-		for receiver in receivers:
-			phone.send_sms(msg.encode('utf-8'), receiver, True)
-			log.info('SMS sent! receiver ' + receiver + 'Sending ' + msg + '')
-		phone.logout()
+		if phone.login(PyFetion.FetionOnline):
+			log.info('Fetion login success!')
+			for receiver in receivers:
+				phone.send_sms(msg.encode('utf-8'), receiver, True)
+				log.info('SMS sent! receiver ' + receiver + 'Sending ' + msg + '')
+			phone.logout()
+		else:
+			log.info('Fetion login failed, message not send! receivers: ' + receivers + ', msg: ' + msg)
+			
 	except:
 		log.exception('SMS sent failed!')
 	
 def sms(msg, receiver):
-	url = 'https://quanapi.sinaapp.com/fetion.php?u=13811830642&p=rw12345'
+	url = 'https://quanapi.sinaapp.com/fetion.php?u=13811830642&p='
 	url = url + '&to=' + urllib2.quote(receiver)
 	url = url + '&m=' + urllib2.quote(msg.encode('utf-8'))
 	ret = urllib2.urlopen(url).read()

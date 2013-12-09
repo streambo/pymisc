@@ -657,8 +657,8 @@ def get_pic(algorithm,obj):
     f = file(fname,"wb")
     f.write(pic)
     f.close()
-    #pic_code = raw_input("输入验证码".decode('utf-8').encode((os.name == 'posix' and 'utf-8' or 'cp936')))
-    pic_code = 'ABCD'
+    pic_code = raw_input("输入验证码".decode('utf-8').encode((os.name == 'posix' and 'utf-8' or 'cp936')))
+    #pic_code = 'ABCD'
     obj.verify = True
     obj.verify_info = [algorithm,pic_code,pic_id]
 
@@ -1308,7 +1308,8 @@ class PyFetion(SIPC):
                 algorithm = re.findall('algorithm="(.+?)"',e[1])
                 if algorithm:
                     algorithm = "picc-PasswordErrorMax"
-
+                
+                return False
                 get_pic(algorithm,self)
                 url = url+"&pid="+self.verify_info[2]+"&pic="+self.verify_info[1]+"&algorithm="+algorithm
                 continue
