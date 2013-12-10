@@ -4,14 +4,14 @@ from utils.rwlogging import log
 from notifier.PyFetion import PyFetion
 
 def smsSelf(msg):
-	sendSms(msg, ['13811830642',])
+	return sendSms(msg, ['13811830642',])
 	
 def smsFamily(msg):
 	#sms(msg, '13810536149')
 	#sms(msg, '13811830642')
 	#sms(msg, '13693718965')
 	receivers = ['13810536149','13811830642','13693718965',]
-	sendSms(msg, receivers)
+	return sendSms(msg, receivers)
 	
 def sendSms(msg, receivers):
 	try:
@@ -22,11 +22,14 @@ def sendSms(msg, receivers):
 				phone.send_sms(msg.encode('utf-8'), receiver, True)
 				log.info('SMS sent! receiver ' + receiver + 'Sending ' + msg + '')
 			phone.logout()
+			return True
 		else:
 			log.info('Fetion login failed, message not send! receivers: ' + receivers + ', msg: ' + msg)
+			return False
 			
 	except:
 		log.exception('SMS sent failed!')
+		return False
 	
 def sms(msg, receiver):
 	url = 'https://quanapi.sinaapp.com/fetion.php?u=13811830642&p='
