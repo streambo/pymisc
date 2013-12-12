@@ -2,19 +2,19 @@
 import smtplib, re
 from email.mime.text import MIMEText
 from utils.rwlogging import log
-
+from utils import const
 
 def send(subject, content):
 	
 	msg = MIMEText(content[28:].encode('utf-8'), 'plain', 'utf-8')
 	msg['Subject'] = re.sub('\n', ';', content[:28])
-	msg['From'] = 'rolandwz@qq.com'
-	msg['To'] = 'rolandwz@qq.com'
+	msg['From'] = const.QQMAIL_ADDR
+	msg['To'] = const.QQMAIL_ADDR
 
 	qq = smtplib.SMTP('smtp.qq.com')
-	qq.login('rolandwz', '')
+	qq.login(const.QQMAIL_USER, const.QQMAIL_PASSWORD)
 	ret = qq.sendmail(msg['From'], msg['To'], msg.as_string())
 	qq.quit()
-	log.info('Sending email: ' + msg + '')
+	log.info('Sending email: ' + content + '')
 
 
