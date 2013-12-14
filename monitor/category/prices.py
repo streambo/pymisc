@@ -63,7 +63,7 @@ def tally(ptype, price):
 	# get the price of 5 minutes ago
 	price5 = db.getPrice(ptype, dLong - 300)
 	percent5 = 0
-	if price30:
+	if price5:
 		log.debug(ptype + ',price5,' + str(price5[3]) + ',' + str(price5[0]))
 		price5 = price5[0]
 		percent5 = round((price['p'] - price5) * 100 / price5, 3)

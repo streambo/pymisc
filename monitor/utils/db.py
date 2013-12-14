@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
+import os, time
 import sqlite3
 from utils.rwlogging import log
 
@@ -92,7 +92,7 @@ NOTES    TEXT
 		
 	def getNotice(self, ptype, psubtype, qdate):
 		cur = self.conn.cursor()
-		cur.execute('SELECT DPERCENT FROM NOTICE WHERE DTYPE=? AND DSUBTYPE=? AND DDATE<=? ORDER BY DTLONG DESC', (ptype, psubtype, qdate))
+		cur.execute('SELECT DPERCENT FROM NOTICE WHERE DTYPE=? AND DSUBTYPE=? AND DDATE<=? ORDER BY SEQNO DESC', (ptype, psubtype, qdate))
 		val = cur.fetchone()
 		if val:
 			return val[0]
@@ -101,7 +101,7 @@ NOTES    TEXT
 		
 	def getNoticeCount(self, ptype, psubtype, qtime):
 		cur = self.conn.cursor()
-		cur.execute('SELECT COUNT(*) FROM NOTICE WHERE DTYPE=? AND DSUBTYPE=? AND DTLONG>=? ORDER BY DTLONG DESC', (ptype, psubtype, qtime))
+		cur.execute('SELECT COUNT(*) FROM NOTICE WHERE DTYPE=? AND DSUBTYPE=? AND DTLONG>=? ORDER BY SEQNO DESC', (ptype, psubtype, qtime))
 		return cur.fetchone()[0]
 
 
