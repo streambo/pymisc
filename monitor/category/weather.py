@@ -21,7 +21,7 @@ dictws = {'0':u'微风', '1':u'3-4级', '2':u'4-5级', '3':u'5-6级', '4':u'6-7�
 def fetchWeather():
 	req = urllib2.Request('http://ext.weather.com.cn/101010200.json')
 	req.add_header('Referer', 'http://ext.weather.com.cn/p.html')
-	resp = urllib2.urlopen(req, timeout=2)
+	resp = urllib2.urlopen(req, timeout=20)
 	if resp.info().get('Content-Encoding') == 'gzip':
 		buf = StringIO.StringIO(resp.read())
 		f = gzip.GzipFile(fileobj=buf)
@@ -32,7 +32,7 @@ def fetchWeather():
 	
 	req = urllib2.Request('http://mobile.weather.com.cn/data/forecast/101010200.html?_=1386498530227')
 	req.add_header('Referer', 'http://mobile.weather.com.cn/weather/101010200.html')
-	resp = urllib2.urlopen(req, timeout=2)
+	resp = urllib2.urlopen(req, timeout=20)
 	if resp.info().get('Content-Encoding') == 'gzip':
 		buf = StringIO.StringIO(resp.read())
 		f = gzip.GzipFile(fileobj=buf)
@@ -41,7 +41,7 @@ def fetchWeather():
 		retjson = resp.read()
 	forcast = json.loads(retjson)
 	
-	resp = urllib2.urlopen('http://zx.bjmemc.com.cn/ashx/Data.ashx?Action=GetAQIClose1h', timeout=2)
+	resp = urllib2.urlopen('http://zx.bjmemc.com.cn/ashx/Data.ashx?Action=GetAQIClose1h', timeout=20)
 	if resp.info().get('Content-Encoding') == 'gzip':
 		buf = StringIO.StringIO(resp.read())
 		f = gzip.GzipFile(fileobj=buf)
@@ -72,7 +72,7 @@ def fetchWeather():
 	return msg
 
 def fetchPm25Forcast():
-	resp = urllib2.urlopen('http://zx.bjmemc.com.cn/ashx/DayForecast.ashx', timeout=60)
+	resp = urllib2.urlopen('http://zx.bjmemc.com.cn/ashx/DayForecast.ashx', timeout=20)
 	if resp.info().get('Content-Encoding') == 'gzip':
 		buf = StringIO.StringIO(resp.read())
 		f = gzip.GzipFile(fileobj=buf)
