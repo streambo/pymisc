@@ -60,13 +60,13 @@ def tally(ptype, price):
 	# calculate the percentage
 	percent0 = price['per']
 	
-	# get the price of 5 minutes ago
-	price5 = db.getPrice(ptype, dLong - 300)
-	percent5 = 0
-	if price5:
-		log.debug(ptype + ',price5,' + str(price5[3]) + ',' + str(price5[0]))
-		price5 = price5[0]
-		percent5 = round((price['p'] - price5) * 100 / price5, 3)
+	# get the price of 3 minutes ago
+	price3 = db.getPrice(ptype, dLong - 180)
+	percent3 = 0
+	if price3:
+		log.debug(ptype + ',price3,' + str(price3[3]) + ',' + str(price3[0]))
+		price3 = price3[0]
+		percent3 = round((price['p'] - price3) * 100 / price3, 3)
 	
 	# get the price of 30 minutes ago
 	price30 = db.getPrice(ptype, dLong - 1800)
@@ -90,11 +90,11 @@ def tally(ptype, price):
 		ret = ret + ptype + '30,' + str(price['p']) + ',' + str(percent30) + '%;\n'
 		db.addNotice((ptype, 30, dLong, dDate, dTime, price['p'], percent30, ret, ''))
 	
-	notcount5 = db.getNoticeCount(ptype, 5, dLong - 300)
-	log.info(ptype + ', percentage 5: ' + str(percent5) + ', notice in 5 minutes: ' + str(notcount5))
-	if notcount5 == 0 and abs(percent5) >= 0.5:
-		ret = ret + ptype + '5,' + str(price['p']) + ',' + str(percent5) + '%;\n'
-		db.addNotice((ptype, 5, dLong, dDate, dTime, price['p'], percent5, ret, ''))
+	notcount3 = db.getNoticeCount(ptype, 3, dLong - 180)
+	log.info(ptype + ', percentage 3: ' + str(percent3) + ', notice in 3 minutes: ' + str(notcount3))
+	if notcount3 == 0 and abs(percent3) >= 0.5:
+		ret = ret + ptype + '3,' + str(price['p']) + ',' + str(percent3) + '%;\n'
+		db.addNotice((ptype, 3, dLong, dDate, dTime, price['p'], percent3, ret, ''))
 	
 	return ret
 	

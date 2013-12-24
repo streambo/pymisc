@@ -81,8 +81,13 @@ def fetchPm25Forcast():
 		retjson = resp.read()
 	pm25 = json.loads(retjson)[0]
 	
-	msg = u'PM2.5预报:今晚' + pm25['QualityN'] + pm25['AQIN'] + '\n' + pm25['DescriptionN']
-	msg = msg + u'\n明天' + pm25['QualityD'] + pm25['AQID'] + '\n' + pm25['DescriptionD']
+	
+	msg = u'PM2.5预报:今晚' + pm25['QualityN'] + pm25['AQIN']
+	if pm25['DescriptionN']:
+		msg = msg + '\n' + pm25['DescriptionN']
+	msg = msg + u'\n明天' + pm25['QualityD'] + pm25['AQID']
+	if pm25['DescriptionD']:
+		msg = msg + '\n' + pm25['DescriptionD']
 	return msg
 
 
