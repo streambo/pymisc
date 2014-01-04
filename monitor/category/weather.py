@@ -18,8 +18,8 @@ dictwo = {'0':'', '1':u'东北风', '2':u'东风', '3':u'东南风',
 dictws = {'0':u'微风', '1':u'3-4级', '2':u'4-5级', '3':u'5-6级', '4':u'6-7级',
 '5':u'7-8级', '6':u'8-9级', '7':u'9-10级', '8':u'10-11级', '9':u'11-12级'}
 
-def fetchWeather():
-	req = urllib2.Request('http://ext.weather.com.cn/101010200.json')
+def fetchWeather(city):
+	req = urllib2.Request('http://ext.weather.com.cn/' + city + '.json')
 	req.add_header('Referer', 'http://ext.weather.com.cn/p.html')
 	resp = urllib2.urlopen(req, timeout=20)
 	if resp.info().get('Content-Encoding') == 'gzip':
@@ -30,8 +30,8 @@ def fetchWeather():
 		retjson = resp.read()
 	climate = json.loads(retjson)
 	
-	req = urllib2.Request('http://mobile.weather.com.cn/data/forecast/101010200.html?_=1386498530227')
-	req.add_header('Referer', 'http://mobile.weather.com.cn/weather/101010200.html')
+	req = urllib2.Request('http://mobile.weather.com.cn/data/forecast/' + city + '.html?_=1386498530227')
+	req.add_header('Referer', 'http://mobile.weather.com.cn/weather/' + city + '.html')
 	resp = urllib2.urlopen(req, timeout=20)
 	if resp.info().get('Content-Encoding') == 'gzip':
 		buf = StringIO.StringIO(resp.read())
@@ -41,24 +41,14 @@ def fetchWeather():
 		retjson = resp.read()
 	forcast = json.loads(retjson)
 	
-	resp = urllib2.urlopen('http://zx.bjmemc.com.cn/ashx/Data.ashx?Action=GetAQIClose1h', timeout=20)
-	if resp.info().get('Content-Encoding') == 'gzip':
-		buf = StringIO.StringIO(resp.read())
-		f = gzip.GzipFile(fileobj=buf)
-		retjson = f.read()
-	else:
-		retjson = resp.read()
-	pm25s = json.loads(retjson)
-	
-	wlpm25 = ''
-	for pm25 in pm25s:
-		if (pm25['StationName'] == u'万柳'): wlpm25 = pm25
-	if not wlpm25:
-		wlpm25 = pm25s[0]
-	
 	dt = datetime.datetime.now().strftime('%H:%M')
 	msg = climate['n'] + ',' + dt + ',' + climate['s'] + ',' + climate['t'] + u'℃,' + climate['w'] + u',湿度' + str(climate['h']) + '%;\n'
-	msg = msg + u'空气指数:' + wlpm25['AQIValue'] + ',' + wlpm25['Quality'] + '\n'
+	
+	if city == '101010200':
+		msg = msg + fetchBJpm25()
+	elif city == '101180101':
+		msg = msg + fetchZZpm25()
+	
 	if forcast['f']['f1'][0]['fa']:
 		msg = msg + u'今天白天:' + dictwe[forcast['f']['f1'][0]['fa']]
 		msg = msg + u',最高' + forcast['f']['f1'][0]['fc'] + u'℃,'
@@ -71,6 +61,47 @@ def fetchWeather():
 	msg = msg + dictwo[forcast['f']['f1'][1]['fe']] + dictws[forcast['f']['f1'][1]['fg']]
 	return msg
 
+def fetchBJpm25():
+	try:
+		resp = urllib2.urlopen('http://zx.bjmemc.com.cn/ashx/Data.ashx?Action=GetAQIClose1h', timeout=20)
+		if resp.info().get('Content-Encoding') == 'gzip':
+			buf = StringIO.StringIO(resp.read())
+			f = gzip.GzipFile(fileobj=buf)
+			retjson = f.read()
+		else:
+			retjson = resp.read()
+		pm25s = json.loads(retjson)
+		
+		wlpm25 = ''
+		for pm25 in pm25s:
+			if (pm25['StationName'] == u'万柳'): wlpm25 = pm25
+		if not wlpm25:
+			wlpm25 = pm25s[0]
+		
+		return u'空气指数:' + wlpm25['AQIValue'] + ',' + wlpm25['Quality'] + '\n'
+	except:
+		log.exception('fetchBJpm25 Exception Occured!')
+		return ''
+
+def fetchZZpm25():
+	try:
+		dt = datetime.datetime.now().strftime('%Y-%m-%d')
+		dhour = datetime.datetime.now().hour
+		dhour = dhour - 1
+		
+		url = 'http://www.zzemc.cn/em_aw/Services/DataCenter.aspx?type=getPointHourData&code=1&time='
+		url = url + dt + '%20' + str(dhour) + ':00:00'
+		#log.debug(url)
+		resp = urllib2.urlopen(url, timeout=20)
+		ac = json.loads(resp.read())
+		ac = ac['Head'][0]
+		pm25 = int(float(ac['PM25']) * 1000)
+		
+		return u'空气指数: ' + str(pm25) + '\n'
+	except:
+		log.exception('fetchZZpm25 Exception Occured!')
+		return ''
+	
 def fetchPm25Forcast():
 	resp = urllib2.urlopen('http://zx.bjmemc.com.cn/ashx/DayForecast.ashx', timeout=20)
 	if resp.info().get('Content-Encoding') == 'gzip':

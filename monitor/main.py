@@ -7,6 +7,7 @@ from notifier import fetion
 from notifier import mail
 from category import prices
 from category import weather
+from utils import const
 
 def minuteMonitor():
 	# Investments 
@@ -36,10 +37,16 @@ def weatherMonitor():
 	try:
 		msg = ''
 		msg = msg + weather.fetchWeather()
-		# sending message if available
-		if msg:
-			log.info('* weatherMonitor MESSAGE * ' + msg)
-			sendMessage('Weather', msg, 2)
+		multimsg = [0, 0]
+		multimsg[0] = [0, 0]
+		multimsg[0][0] = weather.fetchWeather('101010200')
+		multimsg[0][1] = const.WEATHER_BJ_MOBILES
+		multimsg[1] = [0, 0]
+		multimsg[1][0] = weather.fetchWeather('101180101')
+		multimsg[1][1] = const.WEATHER_ZZ_MOBILES
+		
+		sendMultiMessage('Weather', multimsg)
+		
 	except:
 		log.exception('weatherMonitor Exception Occured!')
 
@@ -53,20 +60,28 @@ def pm25Monitor():
 	except:
 		log.exception('pm25Monitor Exception Occured!')
 	
-def sendMessage(mtype, msg, rtype):
+def sendMultiMessage(mtype, multimsg):
 	try:
-		mail.send(mtype, msg)
+		for msgs in multimsg:
+			mail.send(mtype, msgs[0])
 	except:
 		log.exception('Email Exception Occured!')
 		
 	try:
-		if rtype == 1:
-			fetion.smsSelf(msg)
-		else:
-			fetion.smsFamily(msg)
+		fetion.sendMultiSms(multimsg)
 	except:
 		log.exception('Fetion Exception Occured!')
 		
+def sendMessage(mtype, msg, rtype):
+	multimsg = []
+	multimsg[0] = []
+	multimsg[0][0] = msg
+	if rtype == 1:
+		multimsg[0][1] = const.SELF_MOBILE
+	else:
+		multimsg[0][1] = const.FAMILY_MOBILES
+		
+	sendMultiMessage(mtype, multimsg)
 	
 def batchMonitor():
 	try:

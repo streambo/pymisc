@@ -3,21 +3,17 @@ import urllib2, re
 from utils.rwlogging import log
 from notifier.PyFetion import PyFetion
 from utils import const
-
-def smsSelf(msg):
-	return sendSms(msg, const.SELF_MOBILE)
 	
-def smsFamily(msg):
-	return sendSms(msg, const.FAMILY_MOBILES)
-	
-def sendSms(msg, receivers):
+def sendMultiSms(multimsg):
 	try:
 		phone = PyFetion.PyFetion(const.FETION_USER, const.FETION_PASSWORD, 'TCP', debug=True)
 		if phone.login(PyFetion.FetionOnline):
 			log.info('Fetion login success!')
-			for receiver in receivers:
-				phone.send_sms(msg.encode('utf-8'), receiver, True)
-				log.info('SMS sent! receiver ' + receiver + 'Sending ' + msg + '')
+			for msgs in multimsg:
+				msg = msgs[0]
+				for receiver in msgs[1]:
+					phone.send_sms(msg.encode('utf-8'), receiver, True)
+					log.info('SMS sent! receiver ' + receiver + 'Sending ' + msg + '')
 			phone.logout()
 			return True
 		else:
@@ -27,5 +23,4 @@ def sendSms(msg, receivers):
 	except:
 		log.exception('SMS sent failed!')
 		return False
-	
 	
