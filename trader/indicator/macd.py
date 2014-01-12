@@ -22,6 +22,7 @@ def calc_all_macd(table, fast = 12, slow = 26, sign = 9):
 	
 	for i in range(len(prices)):
 		db.addIndicate(prices[i]['dtlong'], macds['sign'][i], macds['fast'][i], macds['slow'][i], macds['dif'][i])
+	db.commit()
 		
 	log.info('MACD done')
 

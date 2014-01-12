@@ -13,7 +13,7 @@ LOGGING_CONFIG = {
 		'simple': {
 			'format': '%(levelname)s %(message)s'
 		},
-		'trader': {
+		'onlymsg': {
 			'format': '%(message)s'
 		},
 	},
@@ -28,16 +28,32 @@ LOGGING_CONFIG = {
 		},
 		'trader': {
 			'level': 'INFO',
-			'class': 'logging.handlers.RotatingFileHandler',
+			'class': 'logging.FileHandler',
 			'filename': os.path.join(os.path.dirname(__file__), '../logs/trader.csv'),
-			'maxBytes': 10485760,
-			'backupCount': 3,
-			'formatter' : 'trader'
+			'formatter' : 'onlymsg'
+		},
+		'balance': {
+			'level': 'INFO',
+			'class': 'logging.FileHandler',
+			'filename': os.path.join(os.path.dirname(__file__), '../logs/balance.csv'),
+			'formatter' : 'onlymsg'
+		},
+		'trades': {
+			'level': 'INFO',
+			'class': 'logging.FileHandler',
+			'filename': os.path.join(os.path.dirname(__file__), '../logs/trades.csv'),
+			'formatter' : 'onlymsg'
+		},
+		'strategy': {
+			'level': 'INFO',
+			'class': 'logging.FileHandler',
+			'filename': os.path.join(os.path.dirname(__file__), '../logs/strategy.csv'),
+			'formatter' : 'onlymsg'
 		},
 		'console': {
 			'level': 'DEBUG',
 			'class': 'logging.StreamHandler',
-			'formatter' : 'simple'
+			'formatter' : 'onlymsg'
 		},
 	},
 	'loggers': {
@@ -51,11 +67,29 @@ LOGGING_CONFIG = {
 			'level': 'INFO',
 			'propagate': True,
 		},
+		'balance': {
+			'handlers': ['trader', 'balance',],
+			'level': 'INFO',
+			'propagate': True,
+		},
+		'trades': {
+			'handlers': ['trader', 'trades',],
+			'level': 'INFO',
+			'propagate': True,
+		},
+		'strategy': {
+			'handlers': ['console', 'trader', 'strategy',],
+			'level': 'INFO',
+			'propagate': True,
+		},
 	}
 }
 
 logging.config.dictConfig(LOGGING_CONFIG) 
 log = logging.getLogger('root')
 tradeLogger = logging.getLogger('trader')
+balLogger = logging.getLogger('balance')
+tradesLogger = logging.getLogger('trades')
+strategyLogger = logging.getLogger('strategy')
 
 

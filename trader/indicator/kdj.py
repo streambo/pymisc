@@ -41,6 +41,7 @@ def calc_all_kdj(table, kPeriod = 5, dPeriod = 3, slowing =3):
 	
 	for i in range(len(prices)):
 		db.addIndicate(prices[i]['dtlong'], kds['k'][i], kds['d'][i])
+	db.commit()
 		
 	log.info('KDJ done')
 		

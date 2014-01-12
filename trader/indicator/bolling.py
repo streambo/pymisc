@@ -38,6 +38,7 @@ def calc_all_bolling(table, period = 20, deviate = 2):
 	for i in range(len(prices)):
 		db.addIndicate(prices[i]['dtlong'], bollings['boll'][i], bollings['mean'][i], bollings['upper'][i], bollings['lower'][i], bollings['std'][i])
 		
+	db.commit()
 	log.info('Bolling done')
 		
 		

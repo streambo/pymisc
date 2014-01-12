@@ -100,6 +100,7 @@ def calc_all_ma(table, matype, period, weight = 0):
 
 	for i in range(len(prices)):
 		db.addIndicate(prices[i]['dtlong'], mas[i])
+	db.commit()
 		
 	log.info('MA done')
 	return mas

@@ -15,6 +15,9 @@ class SqliteDB():
 		self.conn.commit()
 		log.debug('Emptied')
 		
+	def commit(self):
+		self.conn.commit()
+		
 	def addData(self, table, data):
 		cur = self.conn.cursor()
 		cur.execute('SELECT DTLONG FROM ' + table + ' WHERE DTLONG=?', (long(data[0]),))
@@ -26,7 +29,6 @@ class SqliteDB():
 		else:
 			log.info('** data duplicate ** ' + table + ' : ')
 			log.info(data)
-		self.conn.commit()
 		cur.close()
 		return
 		
@@ -76,7 +78,7 @@ VAL8   REAL
 		else:
 			log.info('** data duplicate ** ' + self.table + ' : ')
 			log.info(data)
-		self.conn.commit()
+		#self.conn.commit()
 		cur.close()
 		return
 		

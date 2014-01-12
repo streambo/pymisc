@@ -61,6 +61,7 @@ def calc_all_rsi(table, period = 14):
 	
 	for i in range(len(prices)):
 		db.addIndicate(prices[i]['dtlong'], rsis['rsi'][i], rsis['up'][i], rsis['down'][i])
+	db.commit()
 	
 	log.info('RSI done')
 	
