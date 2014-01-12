@@ -73,8 +73,8 @@ def sendMultiMessage(mtype, multimsg):
 		log.exception('Fetion Exception Occured!')
 		
 def sendMessage(mtype, msg, rtype):
-	multimsg = []
-	multimsg[0] = []
+	multimsg = [0, 0]
+	multimsg[0] = [0, 0]
 	multimsg[0][0] = msg
 	if rtype == 1:
 		multimsg[0][1] = const.SELF_MOBILE
