@@ -9,7 +9,7 @@ def calc_macd(prices, fast = 12, slow = 26, sign = 9):
 	macds['fast'] = ma.calc_ema(ps, fast)
 	macds['slow'] = ma.calc_ema(ps, slow)
 	macds['macd'] = map(lambda f,s: round(f - s, 5), macds['fast'], macds['slow'])
-	macds['sign'] = ma.calc_ma(macds['dif'], sign)
+	macds['sign'] = ma.calc_ma(macds['macd'], sign)
 	#macds['macd'] = map(lambda f,s: round(f - s, 5), macds['dif'], macds['sign'])
 	
 	return macds

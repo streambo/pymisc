@@ -22,6 +22,7 @@ class Trader():
 		self.position = 0
 		self.bsflag = 0
 		
+		self.equity = self.initBal
 		self.lastEquity = self.initBal
 		self.lastbdate = '1900-01-01'
 		self.bdts = []
@@ -53,7 +54,7 @@ class Trader():
 			chan = 'DOWN'
 		
 		#logb.info('STATUS,' + self.strategyName + ',' + ddate + ',' + dtime + ',' + 
-str(self.equity) + ',' + str(chan) + ',' + str(self.bal) + ',' + str(self.position) + ',' + str(price))
+#str(self.equity) + ',' + str(chan) + ',' + str(self.bal) + ',' + str(self.position) + ',' + str(price))
 		
 	def buy(self, ddate, dtime, price, notes='', closing = False):
 		vol = 1000
@@ -97,7 +98,7 @@ str(self.equity) + ',' + str(chan) + ',' + str(self.bal) + ',' + str(self.positi
 		self.bsellPrices.append(price)
 		return
 
-	def generateGraph(self):
+	def generateGraph(self, rate = 0):
 		#if self.equity < self.initBal + 0.2 * self.initBal: return
 	
 		dts = [datetime.datetime.strptime(self.bdts[i], '%Y-%m-%d %H:%M:%S') for i in range(len(self.bdts))]
@@ -141,7 +142,12 @@ str(self.equity) + ',' + str(chan) + ',' + str(self.bal) + ',' + str(self.positi
 		
 		#multi = MultiCursor(fig.canvas, (ax1, ax2), color='r', lw=1, horizOn=False, vertOn=True)
 		#plt.show()
-		plt.savefig(os.path.join(os.path.dirname(__file__), 'result/' + self.strategyName + '.png'), dpi=150)
+		if rate > 0:
+			fname = str(rate) + '_' + self.strategyName
+		else:
+			fname = self.strategyName
+			
+		plt.savefig(os.path.join(os.path.dirname(__file__), 'result/' + fname + '.png'), dpi=150)
 		plt.close(fig)
 		return
 		

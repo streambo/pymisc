@@ -5,7 +5,7 @@ from utils.rwlogging import log
 from trader import Trader
 import dataloader
 from indicator import ma, macd, bolling, rsi, kdj
-from strategy import maTrader, bollingTrader
+from strategy import maTrader, bollingTrader, macdTrader
 
 path = os.path.dirname(__file__)
 
@@ -46,9 +46,11 @@ def clearLog():
 	#os.mkdir(logdir)
 	
 if __name__ == "__main__":
+	#XAGUSD1440_FLUC, XAGUSD1440_2012
 	clearLog()
-	prices = dataloader.importToArray('XAGUSD1440_ALL')
+	prices = dataloader.importToArray('XAGUSD1440_FLUC')
 	maTrader.runStrategy(prices)
+	#macdTrader.runStrategy(prices)
 	#importAll()
 	#importTable('XAGUSD1440')
 	#maTrader.runStrategy('XAGUSD1440')

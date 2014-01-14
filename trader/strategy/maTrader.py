@@ -5,6 +5,7 @@ from utils.rwlogging import log
 from utils.rwlogging import strategyLogger as logs
 from trader import Trader
 from indicator import ma, macd, bolling, rsi, kdj
+from strategy.pool import StrategyPool
 
 highest = 0
 
@@ -14,29 +15,35 @@ def runStrategy(prices):
 	#prices = SqliteDB().getAllPrices(table)
 	ps = [p['close'] for p in prices]
 	
-	#doMaTrade(prices, ps, 'EMA', 6, 14, 24, result = True)
-	#return
+	pool = StrategyPool(100)
+	
+	doMaTrade(pool, prices, ps, 'MA', 2, 13, 16, 26)
+	pool.showStrategies()
+	return
 	
 	for i in range(2, 9):
-		for j in range(6, 20):
+		for j in range(4, 20):
 			if i >= j: continue
-			doMaTrade(prices, ps, 'MA', i, j)
-			doMaTrade(prices, ps, 'EMA', i, j)
-			doMaTrade(prices, ps, 'SMA', i, j)
+			doMaTrade(pool, prices, ps, 'MA', i, j)
+			doMaTrade(pool, prices, ps, 'EMA', i, j)
+			doMaTrade(pool, prices, ps, 'SMA', i, j)
 			
-			for k in range(10, 40):
+			log.debug(i, j)
+			for k in range(6, 40):
 				if j >= k: continue
-				doMaTrade(prices, ps, 'MA', i, j, k)
-				doMaTrade(prices, ps, 'EMA', i, j, k)
-				doMaTrade(prices, ps, 'SMA', i, j, k)
+				doMaTrade(pool, prices, ps, 'MA', i, j, k)
+				doMaTrade(pool, prices, ps, 'EMA', i, j, k)
+				doMaTrade(pool, prices, ps, 'SMA', i, j, k)
 				
-				#for l in range(10, 60):
-				#	if k >= l: continue
-				#	doMaTrade(prices, ps, 'MA', i, j, k, l)
-				#	doMaTrade(prices, ps, 'EMA', i, j, k, l)
-				#	doMaTrade(prices, ps, 'SMA', i, j, k, l)
+				for l in range(8, 60):
+					if k >= l: continue
+					doMaTrade(pool, prices, ps, 'MA', i, j, k, l)
+					doMaTrade(pool, prices, ps, 'EMA', i, j, k, l)
+					doMaTrade(pool, prices, ps, 'SMA', i, j, k, l)
+	
+	pool.showStrategies()
 
-def doMaTrade(prices, ps, matype, fast, slow, slow2 = 0, slow3 = 0, result = False):
+def doMaTrade(pool, prices, ps, matype, fast, slow, slow2 = 0, slow3 = 0):
 	global highest
 	
 	sname = matype + '_' + str(fast) + '_' + str(slow) 
@@ -81,8 +88,7 @@ def doMaTrade(prices, ps, matype, fast, slow, slow2 = 0, slow3 = 0, result = Fal
 		
 		t.show(prices[i]['date'], prices[i]['time'], prices[i]['rmb'])
 	
-	if t.equity > highest or result:
-		highest = t.equity
-		logs.info(sname + ',' + str(len(t.bbuyDates)) + ',' + str(len(t.bsellDates)) + ',' + str(t.equity))
-		t.generateGraph()
+	pool.estimate(t)
+	
+	return
 

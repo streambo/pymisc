@@ -6,13 +6,13 @@ from utils.rwlogging import strategyLogger as logs
 from trader import Trader
 from indicator import ma, macd, bolling, rsi, kdj
 
-highest, openLevel, closeLevel = 0, 1.5, 1
+highest, openLevel, closeLevel = 0, 0.2, 0.1
 
 
-def runStrategy(table):
+def runStrategy(prices):
 	logs.info('STRATEGY,BUY TIMES, SELL TIMES, FINAL EQUITY')
 	
-	prices = SqliteDB().getAllPrices(table)
+	#prices = SqliteDB().getAllPrices(table)
 	ps = [p['close'] for p in prices]
 	
 	doMacdTrade(prices, ps, 12, 26, 9)
@@ -31,26 +31,25 @@ def doMacdTrade(prices, ps, fast, slow, sign):
 	macds = macd.calc_macd(prices, fast, slow, sign)
 	mas = ma.calc_ema(ps, slow)
 	
+	t = Trader(sname)
 	for i in range(slow + sign, len(prices)):
-		if macds['macd'][i] < 0 and macds['macd'][i] > macds['sign'][i] and macds['macd'][i-1] < macds['sign'][i-1]
-and abs(macds['macd'][i]) > openLevel and mas[i] > mas[i-1]:
+		if macds['macd'][i] < 0 and macds['macd'][i] > macds['sign'][i] and macds['macd'][i-1] < macds['sign'][i-1] and abs(macds['macd'][i]) > openLevel and mas[i] > mas[i-1]:
 			notes = 'macd under 0, and abs larger than openlevel'
 			t.buy(prices[i]['date'], prices[i]['time'], prices[i]['rmb'], notes)
 			
-		if macds['macd'][i] < 0 and macds['macd'][i] > macds['sign'][i] and macds['macd'][i-1] < macds['sign'][i-1]
-and abs(macds['macd'][i]) > closeLevel and mas[i] > mas[i-1]:
+		if macds['macd'][i] < 0 and macds['macd'][i] > macds['sign'][i] and macds['macd'][i-1] < macds['sign'][i-1] and abs(macds['macd'][i]) > closeLevel and mas[i] > mas[i-1]:
 			notes = 'macd under 0, and abs larger than closelevel'
 			t.buy(prices[i]['date'], prices[i]['time'], prices[i]['rmb'], notes, True)
 		
-		if macds['macd'][i] > 0 and macds['macd'][i] < macds['sign'][i] and macds['macd'][i-1] > macds['sign'][i-1]
-and abs(macds['macd'][i]) > openLevel and mas[i] < mas[i-1]:
+		if macds['macd'][i] > 0 and macds['macd'][i] < macds['sign'][i] and macds['macd'][i-1] > macds['sign'][i-1] and abs(macds['macd'][i]) > openLevel and mas[i] < mas[i-1]:
 			notes = 'macd above 0, and abs larger than openlevel'
 			t.sell(prices[i]['date'], prices[i]['time'], prices[i]['rmb'], notes)
 	
-		if macds['macd'][i] > 0 and macds['macd'][i] < macds['sign'][i] and macds['macd'][i-1] > macds['sign'][i-1]
-and abs(macds['macd'][i]) > closeLevel and mas[i] < mas[i-1]:
+		if macds['macd'][i] > 0 and macds['macd'][i] < macds['sign'][i] and macds['macd'][i-1] > macds['sign'][i-1] and abs(macds['macd'][i]) > closeLevel and mas[i] < mas[i-1]:
 			notes = 'macd above 0, and abs larger than closeLevel'
 			t.sell(prices[i]['date'], prices[i]['time'], prices[i]['rmb'], notes, True)
+			
+		t.show(prices[i]['date'], prices[i]['time'], prices[i]['rmb'])
 	
 	if t.equity > highest:
 		highest = t.equity
