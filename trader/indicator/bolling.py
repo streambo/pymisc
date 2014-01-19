@@ -10,7 +10,10 @@ def calc_boll(ps, period, deviate):
 	
 	mean = np.mean(ps[-period:])
 	std = round(np.std(ps[-period:], dtype=np.float64), 5)
-	boll = round((ps[-1] - mean) / std, 5)
+	if std == 0:
+		boll = 0
+	else:
+		boll = round((ps[-1] - mean) / std, 5)
 	bupper = mean + deviate * std
 	blower = mean - deviate * std
 	return (mean, std, boll, bupper, blower)

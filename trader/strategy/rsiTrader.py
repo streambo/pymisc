@@ -5,6 +5,7 @@ from utils.rwlogging import log
 from utils.rwlogging import strategyLogger as logs
 from trader import Trader
 from indicator import ma, macd, bolling, rsi, kdj
+from strategy.pool import StrategyPool
 
 highest = 0
 
@@ -13,17 +14,19 @@ def runStrategy(prices):
 	
 	#prices = SqliteDB().getAllPrices(table)
 	ps = [p['close'] for p in prices]
+	pool = StrategyPool(100)
 	
-	doRSITrade(prices, 14, 90, 10)
+	doRSITrade(pool, prices, 14, 70, 30)
+	pool.showStrategies()
 	return
 	
 	for i in range(3, 30):
 		for j in range(70, 100):
 			for k in range(1, 31):
-				doRSITrade(prices, ps, i, j, k)
+				doRSITrade(pool, prices, i, j, k)
 	
 	
-def doRSITrade(prices, ps, period, up, down):
+def doRSITrade(pool, prices, period, up, down):
 	global highest
 	
 	sname = 'RSI_' + str(period) + '_' + str(up) + '_' + str(down)
@@ -31,18 +34,24 @@ def doRSITrade(prices, ps, period, up, down):
 	t = Trader(sname)
 	
 	for i in range(period, len(prices)):
-		if rsis['rsi'][i] <= down:
-			notes = 'RSI : ' + str(rsis['rsi'][i]) + ';down: ' + str(down)
+		if rsis['rsi'][i] < down and rsis['rsi'][i-1] >= down:
+			notes = 'RSI: ' + str(rsis['rsi'][i]) + ';pre: ' + str(rsis['rsi'][i-1]) + ';down: ' + str(down)
 			t.buy(prices[i]['date'], prices[i]['time'], prices[i]['rmb'], notes)
 			
-		if rsis['rsi'][i] >= up:
-			notes = 'RSI : ' + str(rsis['rsi'][i]) + ';up: ' + str(up)
+		if rsis['rsi'][i] >= down and rsis['rsi'][i - 1] < down:
+			notes = 'RSI: ' + str(rsis['rsi'][i]) + ';pre: ' + str(rsis['rsi'][i-1]) + ';down: ' + str(down)
+			t.sell(prices[i]['date'], prices[i]['time'], prices[i]['rmb'], notes, True)
+		
+		if rsis['rsi'][i] > up and rsis['rsi'][i-1] <= up:
+			notes = 'RSI: ' + str(rsis['rsi'][i]) + ';pre: ' + str(rsis['rsi'][i-1]) + ';up: ' + str(up)
 			t.sell(prices[i]['date'], prices[i]['time'], prices[i]['rmb'], notes)
+			
+		if rsis['rsi'][i] <= up and rsis['rsi'][i-1] > up:
+			notes = 'RSI: ' + str(rsis['rsi'][i]) + ';pre: ' + str(rsis['rsi'][i-1]) + ';up: ' + str(up)
+			t.buy(prices[i]['date'], prices[i]['time'], prices[i]['rmb'], notes, True)
 		
 		t.show(prices[i]['date'], prices[i]['time'], prices[i]['rmb'])
 	
-	if t.equity > highest:
-		highest = t.equity
-	logs.info(sname + ',' + str(len(t.bbuyDates)) + ',' + str(len(t.bsellDates)) + ',' + str(t.equity))
-	t.generateGraph()
+	pool.estimate(t)
+	
 	

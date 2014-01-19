@@ -68,7 +68,7 @@ LOGGING_CONFIG = {
 			'propagate': True,
 		},
 		'balance': {
-			'handlers': ['trader', 'balance',],
+			'handlers': ['console', 'trader', 'balance',],
 			'level': 'INFO',
 			'propagate': True,
 		},

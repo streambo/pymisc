@@ -14,21 +14,21 @@ class StrategyPool():
 		if t.equity <= self.strategies[-1][1]: return
 		for i in range(l):
 			if (t.equity > self.strategies[i][1]):
-				log.info(t.strategyName + ',' + str(len(t.bbuyDates)) + ',' + str(len(t.bsellDates)) + ',' + str(t.equity))
+				log.info(t.strategyName + ',' + str(len(t.stats['buy']['date'])) + ',' + str(len(t.stats['sell']['date'])) + ',' + str(t.stats['downDays']) + ',' + str(t.equity))
 				self.strategies.insert(i, [t, t.equity])
 				if l + 1 > self.num:
 					self.strategies.pop(-1)
 				break
 	
 	def showStrategies(self):
-		i = 1
+		rate = 1
+		logs.info('STRATEGY,BUY TIMES, SELL TIMES, DOWN DAYS, FINAL EQUITY')
+		logtr.info('OP,STRATEGY,TIME,COUNTER,PRICE,VOLUMN,POSITION,NOTES')
 		for s in self.strategies:
 			if s[0] == 0: break
-			logs.info(s[0].strategyName + ',' + str(len(s[0].bbuyDates)) + ',' + str(len(s[0].bsellDates)) + ',' + str(s[1]))
-			for j in range (len(s[0].bbuyDates))
-				logtr.info(s[0].strategyName + ',' + s[0].bbuyDates[j] + ',' + str(s[0].bbuyPrices[i]))
+			logs.info(s[0].strategyName + ',' + str(len(s[0].stats['buy']['date'])) + ',' + str(len(s[0].stats['sell']['date'])) + ',' + str(s[0].stats['downDays']) + ',' + str(s[1]))
+			for tl in s[0].stats['log']:
+				logtr.info(tl)
 				
-			for j in range (len(s[0].bsellDates))
-				logtr.info(s[0].strategyName + ',' + s[0].bsellDates[j] + ',' + str(s[0].bsellPrices[i]))
-			s[0].generateGraph(i)
-			i += 1
+			s[0].generateGraph(rate)
+			rate += 1

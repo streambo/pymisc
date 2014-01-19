@@ -14,6 +14,7 @@ def importAll():
 		log.info('done ' + table)
 	
 def importToArray(table):
+	log.debug('loading ' + table + ' ...')
 	prices = []
 	prec = 0
 	with open(os.path.join(path, 'data/' + table + '.csv'), 'rb') as csvfile:

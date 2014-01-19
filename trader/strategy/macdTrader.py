@@ -5,6 +5,7 @@ from utils.rwlogging import log
 from utils.rwlogging import strategyLogger as logs
 from trader import Trader
 from indicator import ma, macd, bolling, rsi, kdj
+from strategy.pool import StrategyPool
 
 highest, openLevel, closeLevel = 0, 0.2, 0.1
 
@@ -12,19 +13,25 @@ highest, openLevel, closeLevel = 0, 0.2, 0.1
 def runStrategy(prices):
 	logs.info('STRATEGY,BUY TIMES, SELL TIMES, FINAL EQUITY')
 	
-	#prices = SqliteDB().getAllPrices(table)
 	ps = [p['close'] for p in prices]
 	
-	doMacdTrade(prices, ps, 12, 26, 9)
+	pool = StrategyPool(100)
+	
+	doMacdTrade(pool, prices, ps, 12, 26, 9)
+	
+	pool.showStrategies()
 	return
+	
 	
 	for i in range(5, 20):
 		for j in range(12, 50):
 			if i >= j: continue
 			for k in range(2, 20):
-				doMacdTrade(prices, ps, i, j, k)
+				doMacdTrade(pool, prices, ps, i, j, k)
+				
+	pool.showStrategies()
 
-def doMacdTrade(prices, ps, fast, slow, sign):
+def doMacdTrade(pool, prices, ps, fast, slow, sign):
 	global highest, openLevel, closeLevel
 	
 	sname = 'MACD_' + str(fast) + '_' + str(slow) + '_' + str(sign)
@@ -51,8 +58,6 @@ def doMacdTrade(prices, ps, fast, slow, sign):
 			
 		t.show(prices[i]['date'], prices[i]['time'], prices[i]['rmb'])
 	
-	if t.equity > highest:
-		highest = t.equity
-	logs.info(sname + ',' + str(len(t.bbuyDates)) + ',' + str(len(t.bsellDates)) + ',' + str(t.equity))
-	t.generateGraph()
+	pool.estimate(t)
+	return
 	
