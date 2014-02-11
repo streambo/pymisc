@@ -89,7 +89,7 @@ def fetchZZpm25():
 		dhour = datetime.datetime.now().hour
 		dhour = dhour - 1
 		
-		url = 'http://www.zzemc.cn/em_aw/Services/DataCenter.aspx?type=getPointHourData&code=1&time='
+		url = 'http://www.zzemc.cn/em_aw/Services/DataCenter.aspx?type=getPointHourData&code=2&time='
 		url = url + dt + '%20' + str(dhour) + ':00:00'
 		#log.debug(url)
 		resp = urllib2.urlopen(url, timeout=20)

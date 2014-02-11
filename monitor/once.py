@@ -36,8 +36,9 @@ def pm25Monitor():
 	
 def sendMultiMessage(mtype, multimsg):
 	try:
-		for msgs in multimsg:
-			mail.send(mtype, msgs[0])
+		#for msgs in multimsg:
+		#	mail.send(mtype, msgs[0])
+		pass
 	except:
 		log.exception('Email Exception Occured!')
 		
@@ -48,13 +49,13 @@ def sendMultiMessage(mtype, multimsg):
 		log.exception('Fetion Exception Occured!')
 		
 def sendMessage(mtype, msg, rtype):
-	multimsg = []
-	multimsg[0] = []
+	multimsg = [0]
+	multimsg[0] = [0, 0]
 	multimsg[0][0] = msg
 	if rtype == 1:
 		multimsg[0][1] = const.SELF_MOBILE
 	else:
-		multimsg[0][1] = const.FAMILY_MOBILES
+		multimsg[0][1] = const.WEATHER_BJ_MOBILES
 		
 	sendMultiMessage(mtype, multimsg)
 	
