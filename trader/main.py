@@ -9,9 +9,12 @@ from trader import Trader
 import dataloader
 from indicator import ma, macd, bolling, rsi, kdj
 from strategy import maTrader, bollingTrader, macdTrader, rsiTrader, kdjTrader
-from strategy import firstTrader
+from strategy import firstTrader, l1Trader, l2Trader, l3Trader
+from mas import maStrategy, fmaStrategy
 
 path = os.path.dirname(__file__)
+
+
 
 def calculateIndicators(table):
 	#tables = ['XAGUSD30', 'XAGUSD60', 'XAGUSD240', 'XAGUSD1440', 'XAGUSD10080', 'XAGUSD43200', ]
@@ -35,12 +38,69 @@ def calculateIndicators(table):
 	h1sma20 = ma.calc_all_ma(table, 'SMA', 20)
 	
 	
+def slope(datas):
+	l = len(datas)
+	xs = np.arange(l)
+	xsT = np.array([xs, np.ones(l)]).T
+	m, c = np.linalg.lstsq(xsT, datas)[0]
+	return m
+	
+def drawStats2(prices, period):
+	ps2 = [p['close'] for p in prices][-140:-115]
+	ps = [p['close'] for p in prices][-140:-120]
+	phs = [p['high'] for p in prices][-140:-120]
+	pls = [p['low'] for p in prices][-140:-120]
+	
+	l = len(prices)
+	ts = np.arange(20)
+	pz = np.poly1d(np.polyfit(ts, ps, 1))
+	phz = np.poly1d(np.polyfit(ts, phs, 1))
+	plz = np.poly1d(np.polyfit(ts, pls, 1))
+	
+	fig = plt.figure()
+	ax1 = fig.add_subplot(311)
+	ax1.plot(ts, ps, '-', ts, pz(ts), '-', ts, phz(ts), '--', ts, plz(ts), '--')
+	#plt.plot(ts, ps, 'o', label='Original data', linestyle='-', markersize=2)
+	#plt.plot(ts, m * ts + c, 'r', label='Fitted line')
+	#plt.legend()
+	ax2 = fig.add_subplot(312)
+	ax2.plot(ts, (pz(ts) - plz(ts)) - (phz(ts) - pz(ts)), '-')
+	ax2.grid()
+	ts2 = np.arange(len(ps2))
+	ax3 = fig.add_subplot(313)
+	ax3.plot(ts2, ps2, '-')
+	multi = MultiCursor(fig.canvas, (ax1, ax2), color='r', lw=1, horizOn=False, vertOn=True)
+	plt.show()
+	return
+	
+	
+	
 def drawStats(prices):
 	
 	for i in range(20, 21):
-		drawStat(prices, i)
+		drawStats2(prices, i)
 
 def drawStat(prices, period):
+	l = len(prices)
+	print l
+	ps = [p['close'] for p in prices]
+	print slope(ps)
+	ps = np.array(ps)
+	#ts = [p['dtlong'] - prices[0]['dtlong'] for p in prices]
+	#ts = np.array(ts)
+	ts = np.arange(l)
+	z = np.polyfit(ts[0:300], ps[0:300], 1)
+	zp = np.poly1d(z)
+	print z
+	z30 = np.polyfit(ts[0:290], ps[0:290], 10)
+	zp30 = np.poly1d(z30)
+	print z30
+	plt.plot(ts, ps, '-', ts, zp(ts), '-', ts, zp30(ts), '--')
+	#plt.plot(ts, ps, 'o', label='Original data', linestyle='-', markersize=2)
+	#plt.plot(ts, m * ts + c, 'r', label='Fitted line')
+	#plt.legend()
+	plt.show()
+	return
 	
 	l = len(prices)
 	ps = [0] * l
@@ -115,14 +175,16 @@ def clearLog():
 	#shutil.rmtree(logdir)
 	#os.mkdir(logdir)
 	
+
 if __name__ == "__main__":
 	#XAGUSD1440_FLUC, XAGUSD1440_UP, XAGUSD1440_DOWN, XAGUSD1440_V, XAGUSD1440_RV, 
 	#XAGUSD1440_FLAT, XAGUSD1440_FLU
-	#XAGUSD1440_2013, XAGUSD1440_2012, XAGUSD1440_ALL, XAGUSD1440_AFTER08
+	#XAGUSD1440_2013, XAGUSD1440_2012, XAGUSD1440_2011, XAGUSD1440_ALL, XAGUSD1440_AFTER08
 	clearLog()
-	prices = dataloader.importToArray('XAGUSD1440_TEST')
-	
-	firstTrader.runStrategy(prices)
+	prices = dataloader.importToArray('XAGUSD1440_AFTER08')
+	fmaStrategy.runStrategy(prices)
+	#drawStats(prices)
+	#l3Trader.runStrategy(prices)
 	
 	#part = prices[109:]
 	#	
@@ -146,11 +208,8 @@ if __name__ == "__main__":
 	#importAll()
 	#importTable('XAGUSD1440')
 	#maTrader.runStrategy('XAGUSD1440')
-	#bollingTrader.runStrategy('XAGUSD1440')
+	#maStrategy.runStrategy('XAGUSD1440')
 	
 	#calculateIndicators('XAGUSD1440')
 	#strategyMA()
 	#strategyBolling()
-
-
-

@@ -17,7 +17,7 @@ def importToArray(table):
 	log.debug('loading ' + table + ' ...')
 	prices = []
 	prec = 0
-	with open(os.path.join(path, 'data/' + table + '.csv'), 'rb') as csvfile:
+	with open(os.path.join(path, '../trader_data/' + table + '.csv'), 'rb') as csvfile:
 		rdr = csv.reader(csvfile)
 		for row in rdr:
 			p = {}

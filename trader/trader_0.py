@@ -12,90 +12,21 @@ from utils.rwlogging import balLogger as logb
 from utils.rwlogging import tradesLogger as logtr
 from utils.rwlogging import strategyLogger as logs
 
-def checkTime(dt):
-	return True
-	td = datetime.timedelta(hours=6)
-	ndt = dt + td
-	#print ndt.weekday, ndt.hour
-	if ndt.weekday() >= 5:
-		return False
-	
-	if ndt.hour in [9, 10, 21, 22, 23, ]:
-		return True
-	
-	if ndt.hour in [11, 15, ] and ndt.minute < 30:
-		return True
-	
-	if ndt.hour in [13, ] and ndt.minute >= 30:
-		return True
-		
-	return False
-	
-
 class Counter():
-	def __init__(self, trader, no):
-		self.trader = trader
+	def __init__(self, no):
 		self.no = str(no)
 		self.isActive = False
+		self.posNum = 0
 		self.position = 0
-		self.wait = 0  #0 none, 1 buy, -1 sell
+		self.direction = 0  #0 none, 1 buy, -1 sell
 		self.args = []
 		
-	def caculateVolume(self, dt, price, volume, notes='', closing=False):
-		isGoodTime = checkTime(dt)
-		
-		opos = self.position
-		owait = self.wait
-		total = self.position + self.wait
-		
-		if isGoodTime and self.isActive:
-			if volume * total >= 0:
-				if not closing:
-					self.position = volume + total
-					self.wait = 0
-			else:
-				if closing:
-					self.position = 0
-					self.wait = 0
-				else:
-					self.position = volume
-					self.wait = 0
-		elif isGoodTime: # can trade but inactive
-			if volume * total >= 0:
-				if not closing:
-					self.wait += volume
-			else:
-				if closing:
-					self.position = 0
-					self.wait = 0
-				else:
-					self.position = 0
-					self.wait = volume
-		else: # cannot trade 
-			if volume * total >= 0:
-				if not closing:
-					self.wait += volume
-			else:
-				if closing:
-					self.wait = 0 - self.position
-				else:
-					self.wait = volume - self.position
-					
-		volume = self.position - opos
-		if not(self.position == opos and self.wait == owait):
-			cname = self.no
-			if isGoodTime: cname += '_G'
-			if self.isActive: cname += '_A'
-			dtstr = dt.strftime('%Y-%m-%d %H:%M')
-			self.trader.stats['log'].append('ORDER,' + self.trader.strategyName + ',' + dtstr + ',' + cname + ',' + str(price) + ',' + str(volume) + ', POS: ' + str(opos) + '->' + str(self.position) + ', WAIT: ' + str(owait) + '->' + str(self.wait) + ',' + notes)
-			
-		return volume
-		
+
 class Trader():
 	def __init__(self, strategyName):
 		self.initBalance = 20000.00
-		#self.feeRate = 0.0008
-		self.fee = 0.02
+		self.fee = 0.006
+		self.volumeSize = 1000
 		
 		plt.rcParams.update({'axes.labelsize':10})
 		plt.rcParams.update({'xtick.labelsize':8})
@@ -105,7 +36,7 @@ class Trader():
 		self.balance = self.initBalance
 		self.equity = self.initBalance
 		self.position = 0
-		self.counters = [Counter(self, 0), Counter(self, 1), Counter(self, 2), Counter(self, 3), ]
+		self.counters = [Counter(0), Counter(1), Counter(2), ]
 		self.counters[0].isActive = True
 		
 		self.stats = {}
@@ -127,27 +58,17 @@ class Trader():
 		
 	def switchActiveCounter(self, cntNo, dt, price):
 		if self.counters[cntNo].isActive: return
+		
 		for counter in self.counters:
 			counter.isActive = False
+		
 		self.counters[cntNo].isActive = True
 		
-	def processOrder(self, dt, price, volume, cntNo=0, notes='', closing=False):
-		counter = self.counters[cntNo]
-		volume = counter.caculateVolume(dt, price, volume, notes, closing)
+		if self.counters[cntNo].direction == 1:
+			self.buy(dt, price, cntNo=cntNo, notes='SWITCH')
 		
-		if volume > 0:
-			self.balance = self.balance - volume * (price + self.fee)
-			#self.stats['log'].append(str(self.balance))
-			self.stats['buy']['date'].append(dt)
-			self.stats['buy']['price'].append(price)
-			
-		elif volume < 0:
-			self.balance = self.balance - volume * (price - self.fee)
-			#self.stats['log'].append(str(self.balance))
-			self.stats['sell']['date'].append(dt)
-			self.stats['sell']['price'].append(price)
-			
-		self.show(dt, price)
+		if self.counters[cntNo].direction == -1:
+			self.sell(dt, price, cntNo=cntNo, notes='SWITCH')
 		
 	def show(self, dt, price):
 		ddate = dt.strftime('%Y-%m-%d')
@@ -172,7 +93,63 @@ class Trader():
 		self.stats['position'].append(self.position)
 		self.stats['price'].append(price)
 		
+	def buy(self, dt, price, cntNo = 0, notes='', closing = False):
+		vol = self.volumeSize
+		counter = self.counters[cntNo]
 		
+		if not counter.isActive:
+			counter.direction = 1
+			closing = True
+		else:
+			counter.direction = 0
+		
+		if closing and counter.posNum >= 0:
+			return
+		elif closing and counter.posNum < 0:
+			vol = 0 - counter.position
+			counter.posNum = 0
+		elif counter.posNum < 0:
+			vol = vol - counter.position;
+			counter.posNum = 1
+		else:
+			counter.posNum += 1
+			
+		counter.position = counter.position + vol
+		self.balance = self.balance - vol * (price + self.fee)
+		self.stats['buy']['date'].append(dt)
+		self.stats['buy']['price'].append(price)
+		dtstr = dt.strftime('%Y-%m-%d %H:%M')
+		self.stats['log'].append('BUY,' + self.strategyName + ',' + dtstr + ',' + counter.no + ',' + str(price) + ',' + str(vol) + ',' + str(counter.position) + ',' + notes)
+		
+	def sell(self, dt, price, cntNo = 0, notes='', closing = False):
+		vol = self.volumeSize
+		counter = self.counters[cntNo]
+		
+		if not counter.isActive:
+			counter.direction = -1
+			closing = True
+		else:
+			counter.direction = 0
+		
+		if closing and counter.posNum <= 0:
+			return
+		elif closing and counter.posNum > 0:
+			vol = counter.position
+			counter.posNum = 0
+		elif counter.posNum > 0:
+			vol = vol + counter.position;
+			counter.posNum = -1
+		else:
+			counter.posNum -= 1
+		
+		counter.position = counter.position - vol
+		self.balance = self.balance + vol * (price - self.fee)
+		
+		self.stats['sell']['date'].append(dt)
+		self.stats['sell']['price'].append(price)
+		dtstr = dt.strftime('%Y-%m-%d %H:%M')
+		self.stats['log'].append('SELL,' + self.strategyName + ',' + dtstr + ',' + counter.no + ',' + str(price) + ',' + str(vol) + ',' + str(counter.position) + ',' + notes)
+	
 	def generateGraph(self, rate = 0):
 		emax = max(self.stats['equity'])
 		emin = min(self.stats['equity'])
